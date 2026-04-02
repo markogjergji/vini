@@ -81,22 +81,33 @@ export default function UploadPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-lg font-medium mb-4">List a Part</h1>
-      <form onSubmit={handleSubmit}>
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      {/* Page header */}
+      <div className="mb-8">
+        <p className="text-xs font-bold uppercase tracking-widest text-red-600 mb-1">Sell</p>
+        <h1 className="text-2xl font-bold text-gray-900">List a Part</h1>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
         <PartForm />
-        <div className="mt-4">
-          <ImageUpload />
-        </div>
-        {store.error && <p className="text-sm text-red-600 mt-2">{store.error}</p>}
+        <ImageUpload />
+
+        {store.error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 text-sm">
+            {store.error}
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={store.submitting}
-          className="mt-4 bg-blue-600 text-white px-6 py-2 text-sm hover:bg-blue-700 disabled:bg-gray-400"
+          className="w-full bg-red-600 text-white py-3 text-sm font-semibold uppercase tracking-wide hover:bg-red-500 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
           {store.submitting ? "Submitting..." : "Submit Listing"}
         </button>
       </form>
+
+      <div className="pb-12" />
     </div>
   );
 }

@@ -2,6 +2,13 @@ import { useEffect } from "react";
 import { useUploadStore } from "../../stores/uploadStore";
 import { getMakes, getModels, getYears } from "../../api/vehicles";
 import { getCategories } from "../../api/parts";
+import Dropdown from "../ui/Dropdown";
+import FormSection from "../ui/FormSection";
+import FormField from "../ui/FormField";
+import TextInput from "../ui/TextInput";
+
+const inputCls =
+  "border border-gray-200 bg-white px-3 py-2 text-sm w-full focus:outline-none focus:border-gray-400 transition-colors";
 
 export default function PartForm() {
   const store = useUploadStore();
@@ -37,7 +44,6 @@ export default function PartForm() {
     });
   };
 
-  // Only show top-level categories (parent_id is null)
   const topCategories = store.categories.filter((c) => c.parent_id === null);
   const subCategories = store.categories.filter((c) => c.parent_id !== null);
 
@@ -45,255 +51,242 @@ export default function PartForm() {
     <div className="space-y-4">
       {/* Seller info */}
       {!store.sellerId && (
-        <fieldset className="border border-gray-300 p-4">
-          <legend className="text-sm font-medium px-1">Your Info</legend>
-          <div className="space-y-2">
-            <div>
-              <label className="block text-sm mb-1">Name *</label>
-              <input
-                type="text"
-                className="border border-gray-300 px-3 py-2 text-sm w-full"
-                value={store.sellerName}
-                onChange={(e) => store.set({ sellerName: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm mb-1">Phone</label>
-              <input
-                type="text"
-                className="border border-gray-300 px-3 py-2 text-sm w-full"
-                value={store.sellerPhone}
-                onChange={(e) => store.set({ sellerPhone: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm mb-1">Business name (optional)</label>
-              <input
-                type="text"
-                className="border border-gray-300 px-3 py-2 text-sm w-full"
-                value={store.sellerBusinessName}
-                onChange={(e) => store.set({ sellerBusinessName: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm mb-1">City</label>
-              <input
-                type="text"
-                className="border border-gray-300 px-3 py-2 text-sm w-full"
-                value={store.sellerCity}
-                onChange={(e) => store.set({ sellerCity: e.target.value })}
-              />
-            </div>
-          </div>
-        </fieldset>
+        <FormSection title="Your Info">
+          <TextInput
+            label="Name"
+            required
+            value={store.sellerName}
+            onChange={(v) => store.set({ sellerName: v })}
+          />
+          <TextInput
+            label="Phone"
+            value={store.sellerPhone}
+            onChange={(v) => store.set({ sellerPhone: v })}
+          />
+          <TextInput
+            label="Business Name"
+            optional
+            value={store.sellerBusinessName}
+            onChange={(v) => store.set({ sellerBusinessName: v })}
+          />
+          <TextInput
+            label="City"
+            value={store.sellerCity}
+            onChange={(v) => store.set({ sellerCity: v })}
+          />
+        </FormSection>
       )}
 
       {store.sellerId && (
-        <p className="text-sm text-gray-600">
-          Listing as: <strong>{store.sellerName}</strong>{" "}
+        <div className="flex items-center gap-2 text-sm text-gray-600 bg-white border border-gray-200 px-5 py-3">
+          <span>
+            Listing as <strong className="text-gray-900">{store.sellerName}</strong>
+          </span>
           <button
             type="button"
-            className="text-blue-600 hover:underline text-sm"
+            className="ml-auto text-xs font-semibold uppercase tracking-wide text-red-600 hover:text-red-500 transition-colors"
             onClick={() => store.set({ sellerId: null })}
           >
-            edit
+            Edit
           </button>
-        </p>
+        </div>
       )}
 
       {/* Part details */}
-      <fieldset className="border border-gray-300 p-4">
-        <legend className="text-sm font-medium px-1">Part Details</legend>
-        <div className="space-y-2">
-          <div>
-            <label className="block text-sm mb-1">Title *</label>
-            <input
-              type="text"
-              className="border border-gray-300 px-3 py-2 text-sm w-full"
-              value={store.title}
-              onChange={(e) => store.set({ title: e.target.value })}
+      <FormSection title="Part Details">
+        <TextInput
+          label="Title"
+          required
+          value={store.title}
+          onChange={(v) => store.set({ title: v })}
+        />
+        <FormField label="Description">
+          <textarea
+            className={inputCls}
+            rows={3}
+            value={store.description}
+            onChange={(e) => store.set({ description: e.target.value })}
+          />
+        </FormField>
+        <div className="grid grid-cols-2 gap-4">
+          <TextInput
+            label="Price (ALL)"
+            type="number"
+            value={store.price}
+            onChange={(v) => store.set({ price: v })}
+          />
+          <FormField label="Condition" required>
+            <Dropdown
+              size="md"
+              className="border border-gray-200"
+              placeholder="Condition"
+              value={store.condition}
+              options={[
+                { value: "used", label: "Used" },
+                { value: "refurbished", label: "Refurbished" },
+                { value: "new_old_stock", label: "New Old Stock" },
+              ]}
+              onChange={(v) => store.set({ condition: v as string })}
             />
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Description</label>
-            <textarea
-              className="border border-gray-300 px-3 py-2 text-sm w-full"
-              rows={3}
-              value={store.description}
-              onChange={(e) => store.set({ description: e.target.value })}
-            />
-          </div>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-sm mb-1">Price (ALL)</label>
-              <input
-                type="number"
-                className="border border-gray-300 px-3 py-2 text-sm w-full"
-                value={store.price}
-                onChange={(e) => store.set({ price: e.target.value })}
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm mb-1">Condition *</label>
-              <select
-                className="border border-gray-300 px-3 py-2 text-sm w-full"
-                value={store.condition}
-                onChange={(e) => store.set({ condition: e.target.value })}
-              >
-                <option value="used">Used</option>
-                <option value="refurbished">Refurbished</option>
-                <option value="new_old_stock">New Old Stock</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-sm mb-1">Category</label>
-              <select
-                className="border border-gray-300 px-3 py-2 text-sm w-full"
-                value={store.categoryId ?? ""}
-                onChange={(e) => store.set({ categoryId: e.target.value ? Number(e.target.value) : null })}
-              >
-                <option value="">Select category</option>
-                {topCategories.map((c) => (
-                  <optgroup key={c.id} label={c.name}>
-                    {subCategories
-                      .filter((s) => s.parent_id === c.id)
-                      .map((s) => (
-                        <option key={s.id} value={s.id}>{s.name}</option>
-                      ))}
-                  </optgroup>
-                ))}
-              </select>
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm mb-1">OEM Number</label>
-              <input
-                type="text"
-                className="border border-gray-300 px-3 py-2 text-sm w-full"
-                value={store.oemNumber}
-                onChange={(e) => store.set({ oemNumber: e.target.value })}
-              />
-            </div>
-          </div>
+          </FormField>
         </div>
-      </fieldset>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Category">
+            <Dropdown
+              size="md"
+              className="border border-gray-200"
+              placeholder="Select category"
+              value={store.categoryId}
+              options={topCategories.flatMap((c) =>
+                subCategories
+                  .filter((s) => s.parent_id === c.id)
+                  .map((s) => ({ value: s.id, label: s.name, sub: c.name }))
+              )}
+              onChange={(v) => store.set({ categoryId: v !== null ? Number(v) : null })}
+            />
+          </FormField>
+          <TextInput
+            label="OEM Number"
+            value={store.oemNumber}
+            onChange={(v) => store.set({ oemNumber: v })}
+          />
+        </div>
+      </FormSection>
 
       {/* Compatibility */}
-      <fieldset className="border border-gray-300 p-4">
-        <legend className="text-sm font-medium px-1">Fits Which Car?</legend>
-        <div className="flex gap-2 items-end flex-wrap">
-          <select
-            className="border border-gray-300 px-3 py-2 text-sm"
-            value={store.currentMakeId ?? ""}
-            onChange={(e) =>
-              store.set({
-                currentMakeId: e.target.value ? Number(e.target.value) : null,
-                currentModelId: null,
-                currentYearId: null,
-                models: [],
-                years: [],
-              })
-            }
-          >
-            <option value="">Make</option>
-            {store.makes.map((m) => (
-              <option key={m.id} value={m.id}>{m.name}</option>
-            ))}
-          </select>
-          <select
-            className="border border-gray-300 px-3 py-2 text-sm"
-            value={store.currentModelId ?? ""}
-            onChange={(e) =>
-              store.set({
-                currentModelId: e.target.value ? Number(e.target.value) : null,
-                currentYearId: null,
-                years: [],
-              })
-            }
-            disabled={!store.currentMakeId}
-          >
-            <option value="">Model</option>
-            {store.models.map((m) => (
-              <option key={m.id} value={m.id}>{m.name}</option>
-            ))}
-          </select>
-          <select
-            className="border border-gray-300 px-3 py-2 text-sm"
-            value={store.currentYearId ?? ""}
-            onChange={(e) => store.set({ currentYearId: e.target.value ? Number(e.target.value) : null })}
-            disabled={!store.currentModelId}
-          >
-            <option value="">Year</option>
-            {store.years.map((y) => (
-              <option key={y.id} value={y.id}>
-                {y.year_start}–{y.year_end}{y.generation ? ` (${y.generation})` : ""}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={handleAddCompat}
-            disabled={!store.currentYearId}
-            className="bg-blue-600 text-white px-3 py-2 text-sm hover:bg-blue-700 disabled:bg-gray-300"
-          >
-            + Add
-          </button>
+      <section className="border border-gray-200 bg-white">
+        <div className="px-5 py-3 border-b border-gray-100">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-700">
+            Fits Which Car?
+          </h2>
         </div>
-        {store.compatEntries.length > 0 && (
-          <div className="mt-2 space-y-1">
-            {store.compatEntries.map((e) => (
-              <div key={e.modelYearId} className="flex items-center gap-2 text-sm">
-                <button
-                  type="button"
-                  onClick={() => store.removeCompat(e.modelYearId)}
-                  className="text-red-600 hover:underline"
-                >
-                  x
-                </button>
-                {e.label}
-              </div>
-            ))}
+        <div className="px-5 py-4">
+          <div className="flex gap-2 items-end">
+            <Dropdown
+              size="md"
+              className="border border-gray-200 flex-1"
+              placeholder="Make"
+              value={store.currentMakeId}
+              options={store.makes.map((m) => ({ value: m.id, label: m.name }))}
+              onChange={(v) =>
+                store.set({
+                  currentMakeId: v !== null ? Number(v) : null,
+                  currentModelId: null,
+                  currentYearId: null,
+                  models: [],
+                  years: [],
+                })
+              }
+            />
+            <Dropdown
+              size="md"
+              className="border border-gray-200 flex-1"
+              placeholder="Model"
+              value={store.currentModelId}
+              options={store.models.map((m) => ({ value: m.id, label: m.name }))}
+              onChange={(v) =>
+                store.set({
+                  currentModelId: v !== null ? Number(v) : null,
+                  currentYearId: null,
+                  years: [],
+                })
+              }
+              disabled={!store.currentMakeId}
+            />
+            <Dropdown
+              size="md"
+              className="border border-gray-200 flex-1"
+              placeholder="Year"
+              value={store.currentYearId}
+              options={store.years.map((y) => ({
+                value: y.id,
+                label: `${y.year_start}–${y.year_end}`,
+                sub: y.generation ?? undefined,
+              }))}
+              onChange={(v) => store.set({ currentYearId: v !== null ? Number(v) : null })}
+              disabled={!store.currentModelId}
+            />
+            <button
+              type="button"
+              onClick={handleAddCompat}
+              disabled={!store.currentYearId}
+              className="bg-zinc-900 text-white px-4 py-2 text-sm font-semibold hover:bg-zinc-700 transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+            >
+              + Add
+            </button>
           </div>
-        )}
-      </fieldset>
+          {store.compatEntries.length > 0 && (
+            <div className="mt-3 space-y-1.5">
+              {store.compatEntries.map((e) => (
+                <div
+                  key={e.modelYearId}
+                  className="flex items-center gap-2 text-sm bg-gray-50 border border-gray-200 px-3 py-2"
+                >
+                  <svg
+                    className="w-3.5 h-3.5 text-gray-400 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
+                    />
+                  </svg>
+                  <span className="text-gray-700 flex-1">{e.label}</span>
+                  <button
+                    type="button"
+                    onClick={() => store.removeCompat(e.modelYearId)}
+                    className="text-xs text-red-600 hover:text-red-500 font-semibold transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Location */}
-      <fieldset className="border border-gray-300 p-4">
-        <legend className="text-sm font-medium px-1">Location</legend>
-        <div className="space-y-2">
-          <button
-            type="button"
-            className="text-blue-600 hover:underline text-sm"
-            onClick={() => {
-              navigator.geolocation.getCurrentPosition(
-                (pos) =>
-                  store.set({
-                    latitude: pos.coords.latitude,
-                    longitude: pos.coords.longitude,
-                  }),
-                () => store.set({ error: "Could not get location" }),
-              );
-            }}
-          >
-            Use My Location
-          </button>
-          {store.latitude && store.longitude && (
-            <p className="text-sm text-gray-600">
-              Location set: {store.latitude.toFixed(4)}, {store.longitude.toFixed(4)}
-            </p>
-          )}
-          <div>
-            <label className="block text-sm mb-1">Address</label>
-            <input
-              type="text"
-              className="border border-gray-300 px-3 py-2 text-sm w-full"
-              value={store.locationText}
-              onChange={(e) => store.set({ locationText: e.target.value })}
+      <FormSection title="Location">
+        <button
+          type="button"
+          className="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-500 transition-colors"
+          onClick={() => {
+            navigator.geolocation.getCurrentPosition(
+              (pos) =>
+                store.set({
+                  latitude: pos.coords.latitude,
+                  longitude: pos.coords.longitude,
+                }),
+              () => store.set({ error: "Could not get location" }),
+            );
+          }}
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19.5 10.5c0 7.142-7.5 11.25-9.5 11.25S.5 17.642.5 10.5a9 9 0 1119 0z"
             />
-          </div>
-        </div>
-      </fieldset>
+          </svg>
+          Use My Location
+        </button>
+        {store.latitude && store.longitude && (
+          <p className="text-xs text-gray-500 font-mono bg-gray-50 border border-gray-200 px-3 py-2">
+            {store.latitude.toFixed(4)}, {store.longitude.toFixed(4)}
+          </p>
+        )}
+        <TextInput
+          label="Address"
+          value={store.locationText}
+          onChange={(v) => store.set({ locationText: v })}
+        />
+      </FormSection>
     </div>
   );
 }

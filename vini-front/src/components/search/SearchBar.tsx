@@ -1,17 +1,19 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSearchStore } from "../../stores/searchStore";
 import { getMakes, getModels, getYears } from "../../api/vehicles";
-import { searchParts } from "../../api/parts";
+import Dropdown from "../ui/Dropdown";
 
 export default function SearchBar() {
   const {
     makes, models, years,
     selectedMakeId, selectedModelId, selectedYearId,
-    page, limit,
     setMakes, setModels, setYears,
     setSelectedMakeId, setSelectedModelId, setSelectedYearId,
-    setResults, setLoading, setError,
+    setError,
   } = useSearchStore();
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     getMakes().then(setMakes).catch(() => setError("Failed to load makes"));
@@ -29,67 +31,65 @@ export default function SearchBar() {
     }
   }, [selectedModelId, setYears, setError]);
 
-  const handleSearch = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await searchParts({
-        make_id: selectedMakeId ?? undefined,
-        model_id: selectedModelId ?? undefined,
-        model_year_id: selectedYearId ?? undefined,
-        page,
-        limit,
-      });
-      setResults(res.items, res.total);
-    } catch {
-      setError("Search failed");
-    } finally {
-      setLoading(false);
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+
+    const make = makes.find((m) => m.id === selectedMakeId);
+    const model = models.find((m) => m.id === selectedModelId);
+    const year = years.find((y) => y.id === selectedYearId);
+
+    if (selectedMakeId) {
+      params.set("make_id", String(selectedMakeId));
+      if (make) params.set("make", make.name);
     }
+    if (selectedModelId) {
+      params.set("model_id", String(selectedModelId));
+      if (model) params.set("model", model.name);
+    }
+    if (selectedYearId) {
+      params.set("year_id", String(selectedYearId));
+      if (year) params.set("year", `${year.year_start}–${year.year_end}`);
+    }
+
+    navigate(`/search?${params.toString()}`);
   };
 
+  const makeOptions = makes.map((m) => ({ value: m.id, label: m.name }));
+  const modelOptions = models.map((m) => ({ value: m.id, label: m.name }));
+  const yearOptions = years.map((y) => ({
+    value: y.id,
+    label: `${y.year_start}–${y.year_end}`,
+    sub: y.generation ?? undefined,
+  }));
+
   return (
-    <div className="flex flex-wrap gap-2 items-end">
-      <select
-        className="border border-gray-300 px-3 py-2 text-sm"
-        value={selectedMakeId ?? ""}
-        onChange={(e) => setSelectedMakeId(e.target.value ? Number(e.target.value) : null)}
-      >
-        <option value="">Make</option>
-        {makes.map((m) => (
-          <option key={m.id} value={m.id}>{m.name}</option>
-        ))}
-      </select>
-
-      <select
-        className="border border-gray-300 px-3 py-2 text-sm"
-        value={selectedModelId ?? ""}
-        onChange={(e) => setSelectedModelId(e.target.value ? Number(e.target.value) : null)}
+    <div className="w-full max-w-3xl mx-auto flex flex-col sm:flex-row shadow-2xl">
+      <Dropdown
+        placeholder="Make"
+        value={selectedMakeId}
+        options={makeOptions}
+        onChange={(v) => setSelectedMakeId(v !== null ? Number(v) : null)}
+        className="flex-1 border-r border-gray-200 z-10"
+      />
+      <Dropdown
+        placeholder="Model"
+        value={selectedModelId}
+        options={modelOptions}
+        onChange={(v) => setSelectedModelId(v !== null ? Number(v) : null)}
         disabled={!selectedMakeId}
-      >
-        <option value="">Model</option>
-        {models.map((m) => (
-          <option key={m.id} value={m.id}>{m.name}</option>
-        ))}
-      </select>
-
-      <select
-        className="border border-gray-300 px-3 py-2 text-sm"
-        value={selectedYearId ?? ""}
-        onChange={(e) => setSelectedYearId(e.target.value ? Number(e.target.value) : null)}
+        className="flex-1 border-r border-gray-200"
+      />
+      <Dropdown
+        placeholder="Year"
+        value={selectedYearId}
+        options={yearOptions}
+        onChange={(v) => setSelectedYearId(v !== null ? Number(v) : null)}
         disabled={!selectedModelId}
-      >
-        <option value="">Year</option>
-        {years.map((y) => (
-          <option key={y.id} value={y.id}>
-            {y.year_start}–{y.year_end}{y.generation ? ` (${y.generation})` : ""}
-          </option>
-        ))}
-      </select>
-
+        className="flex-1"
+      />
       <button
         onClick={handleSearch}
-        className="bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700"
+        className="h-12 px-7 bg-red-600 text-white text-sm font-bold uppercase tracking-wide hover:bg-red-500 active:bg-red-700 transition-colors whitespace-nowrap border-t border-gray-200 sm:border-t-0"
       >
         Search
       </button>

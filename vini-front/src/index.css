@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'LexendDeca';
+  src: url('./assets/fonts/LexendDeca-Regular.woff') format('woff');
+  font-weight: 400;
+  font-display: swap;
+}
+
 body {
   margin: 0;
+}
+
+.font-heading, html {
+  font-family: 'LexendDeca', system-ui, sans-serif;
 }

@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Database
+vini-back/vini.db
+
+# Uploaded files
+vini-back/app/uploads/
