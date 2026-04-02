@@ -1,10 +1,13 @@
+import { MapPin, Phone, Mail } from "lucide-react";
 import type { Seller } from "../../types";
 
 interface Props {
   seller: Seller;
+  lat?: number;
+  lng?: number;
 }
 
-export default function SellerInfo({ seller }: Props) {
+export default function SellerInfo({ seller, lat, lng }: Props) {
   const displayName = seller.business_name ?? seller.name;
   const initials = displayName
     .split(" ")
@@ -51,9 +54,7 @@ export default function SellerInfo({ seller }: Props) {
             href={`tel:${seller.phone}`}
             className="flex items-center gap-2.5 text-sm text-gray-700 hover:text-blue-600 transition-colors no-underline"
           >
-            <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-            </svg>
+            <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
             {seller.phone}
           </a>
         )}
@@ -63,38 +64,40 @@ export default function SellerInfo({ seller }: Props) {
             href={`mailto:${seller.email}`}
             className="flex items-center gap-2.5 text-sm text-gray-700 hover:text-blue-600 transition-colors no-underline"
           >
-            <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-            </svg>
+            <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
             {seller.email}
           </a>
         )}
 
         {seller.address && (
           <div className="flex items-start gap-2.5 text-sm text-gray-600">
-            <svg className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-9.5 11.25S.5 17.642.5 10.5a9 9 0 1119 0z" />
-            </svg>
+            <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
             <span>{seller.address}{seller.city ? `, ${seller.city}` : ""}</span>
           </div>
         )}
       </div>
 
       {/* CTA */}
-      {seller.phone && (
-        <div className="px-4 pb-4">
+      <div className="px-4 pb-4 flex flex-col gap-2">
+        {seller.phone && (
           <a
             href={`tel:${seller.phone}`}
             className="flex items-center justify-center gap-2 w-full bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold text-sm py-2.5 transition-colors no-underline"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-            </svg>
+            <Phone className="w-4 h-4" />
             Call Seller
           </a>
-        </div>
-      )}
+        )}
+        {lat && lng && (
+          <a
+            href="#location-map"
+            className="flex items-center justify-center gap-2 w-full bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-semibold text-sm py-2.5 transition-colors no-underline"
+          >
+            <MapPin className="w-4 h-4 text-gray-500" />
+            View on Map
+          </a>
+        )}
+      </div>
     </div>
   );
 }
