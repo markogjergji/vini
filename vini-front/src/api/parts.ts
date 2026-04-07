@@ -5,6 +5,7 @@ export async function searchParts(params: {
   make_id?: number;
   model_id?: number;
   model_year_id?: number;
+  seller_id?: number;
   page?: number;
   limit?: number;
 }): Promise<PartSearchResponse> {

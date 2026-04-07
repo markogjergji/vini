@@ -19,11 +19,12 @@ def search_parts(
     make_id: int | None = None,
     model_id: int | None = None,
     model_year_id: int | None = None,
+    seller_id: int | None = None,
     page: int = 1,
     limit: int = 20,
     session: Session = Depends(get_session),
 ) -> PartSearchResponse:
-    return part_service.search_parts(session, make_id, model_id, model_year_id, page, limit)
+    return part_service.search_parts(session, make_id, model_id, model_year_id, seller_id, page, limit)
 
 
 @router.get("/categories", response_model=list[PartCategoryRead])

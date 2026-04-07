@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -11,6 +13,16 @@ class SellerCreate(BaseModel):
     latitude: float | None = None
     longitude: float | None = None
     is_business: bool = False
+
+
+class SellerUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    business_name: Optional[str] = None
+    address: Optional[str] = None
+    city: Optional[str] = None
+    is_business: Optional[bool] = None
 
 
 class SellerRead(BaseModel):

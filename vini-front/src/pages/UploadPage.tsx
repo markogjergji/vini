@@ -1,37 +1,32 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUploadStore } from "../stores/uploadStore";
 import PartForm from "../components/upload/PartForm";
 import ImageUpload from "../components/upload/ImageUpload";
-import { createSeller } from "../api/sellers";
+import { getMySeller } from "../api/sellers";
 import { createPart, uploadPartImages } from "../api/parts";
 
 export default function UploadPage() {
   const store = useUploadStore();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    getMySeller().then((seller) => {
+      store.set({ sellerId: seller.id, sellerName: seller.name });
+    }).catch(() => {
+      store.set({ error: "Could not load your seller profile." });
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     store.set({ submitting: true, error: null });
 
     try {
-      // Create seller if needed
-      let sellerId = store.sellerId;
+      const sellerId = store.sellerId;
       if (!sellerId) {
-        if (!store.sellerName.trim()) {
-          store.set({ error: "Name is required", submitting: false });
-          return;
-        }
-        const seller = await createSeller({
-          name: store.sellerName,
-          phone: store.sellerPhone || undefined,
-          business_name: store.sellerBusinessName || undefined,
-          city: store.sellerCity || undefined,
-          is_business: !!store.sellerBusinessName,
-        });
-        sellerId = seller.id;
-        store.set({ sellerId: seller.id, sellerName: seller.name });
-        localStorage.setItem("seller_id", String(seller.id));
-        localStorage.setItem("seller_name", seller.name);
+        store.set({ error: "Seller profile not loaded.", submitting: false });
+        return;
       }
 
       if (!store.title.trim()) {
@@ -60,9 +55,10 @@ export default function UploadPage() {
         await uploadPartImages(part.id, store.imageFiles);
       }
 
+      const savedSellerId = sellerId;
+      const savedSellerName = store.sellerName;
       store.reset();
-      // Restore seller info for next upload
-      store.set({ sellerId: sellerId, sellerName: localStorage.getItem("seller_name") ?? "" });
+      store.set({ sellerId: savedSellerId, sellerName: savedSellerName });
       navigate(`/parts/${part.id}`);
     } catch {
       store.set({ error: "Failed to submit listing" });
@@ -70,15 +66,6 @@ export default function UploadPage() {
       store.set({ submitting: false });
     }
   };
-
-  // Load seller from localStorage on first render
-  if (!store.sellerId) {
-    const savedId = localStorage.getItem("seller_id");
-    const savedName = localStorage.getItem("seller_name");
-    if (savedId && savedName) {
-      store.set({ sellerId: Number(savedId), sellerName: savedName });
-    }
-  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">

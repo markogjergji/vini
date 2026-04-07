@@ -53,6 +53,7 @@ def search_parts(
     make_id: int | None = None,
     model_id: int | None = None,
     model_year_id: int | None = None,
+    seller_id: int | None = None,
     page: int = 1,
     limit: int = 20,
 ) -> PartSearchResponse:
@@ -61,6 +62,9 @@ def search_parts(
         select(Part)
         .where(Part.status == ListingStatus.active)
     )
+
+    if seller_id:
+        query = query.where(Part.seller_id == seller_id)
 
     # Join through compatibility chain if any vehicle filter is set
     if make_id or model_id or model_year_id:

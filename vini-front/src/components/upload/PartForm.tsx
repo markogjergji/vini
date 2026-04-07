@@ -49,46 +49,11 @@ export default function PartForm() {
 
   return (
     <div className="space-y-4">
-      {/* Seller info */}
-      {!store.sellerId && (
-        <FormSection title="Your Info">
-          <TextInput
-            label="Name"
-            required
-            value={store.sellerName}
-            onChange={(v) => store.set({ sellerName: v })}
-          />
-          <TextInput
-            label="Phone"
-            value={store.sellerPhone}
-            onChange={(v) => store.set({ sellerPhone: v })}
-          />
-          <TextInput
-            label="Business Name"
-            optional
-            value={store.sellerBusinessName}
-            onChange={(v) => store.set({ sellerBusinessName: v })}
-          />
-          <TextInput
-            label="City"
-            value={store.sellerCity}
-            onChange={(v) => store.set({ sellerCity: v })}
-          />
-        </FormSection>
-      )}
-
-      {store.sellerId && (
+      {store.sellerName && (
         <div className="flex items-center gap-2 text-sm text-gray-600 bg-white border border-gray-200 px-5 py-3">
           <span>
             Listing as <strong className="text-gray-900">{store.sellerName}</strong>
           </span>
-          <button
-            type="button"
-            className="ml-auto text-xs font-semibold uppercase tracking-wide text-red-600 hover:text-red-500 transition-colors"
-            onClick={() => store.set({ sellerId: null })}
-          >
-            Edit
-          </button>
         </div>
       )}
 
