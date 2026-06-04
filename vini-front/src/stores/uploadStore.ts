@@ -5,6 +5,7 @@ interface CompatEntry {
   makeId: number;
   modelId: number;
   modelYearId: number;
+  selectedYear: number | null;
   label: string;
 }
 
@@ -14,6 +15,9 @@ interface UploadState {
   sellerPhone: string;
   sellerBusinessName: string;
   sellerCity: string;
+  sellerAddress: string;
+  sellerLatitude: number | null;
+  sellerLongitude: number | null;
   sellerId: number | null;
 
   // Part
@@ -29,9 +33,11 @@ interface UploadState {
 
   // Compatibility
   compatEntries: CompatEntry[];
+  currentYear: number | null;
   currentMakeId: number | null;
   currentModelId: number | null;
   currentYearId: number | null;
+  availableYears: number[];
   makes: Make[];
   models: VehicleModel[];
   years: ModelYear[];
@@ -60,6 +66,9 @@ const initialState = {
   sellerPhone: "",
   sellerBusinessName: "",
   sellerCity: "",
+  sellerAddress: "",
+  sellerLatitude: null as number | null,
+  sellerLongitude: null as number | null,
   sellerId: null as number | null,
   title: "",
   description: "",
@@ -71,9 +80,11 @@ const initialState = {
   latitude: null as number | null,
   longitude: null as number | null,
   compatEntries: [] as CompatEntry[],
+  currentYear: null as number | null,
   currentMakeId: null as number | null,
   currentModelId: null as number | null,
   currentYearId: null as number | null,
+  availableYears: [] as number[],
   makes: [] as Make[],
   models: [] as VehicleModel[],
   years: [] as ModelYear[],
@@ -91,9 +102,11 @@ export const useUploadStore = create<UploadState>((set) => ({
       compatEntries: s.compatEntries.some((e) => e.modelYearId === entry.modelYearId)
         ? s.compatEntries
         : [...s.compatEntries, entry],
+      currentYear: null,
       currentMakeId: null,
       currentModelId: null,
       currentYearId: null,
+      makes: [],
       models: [],
       years: [],
     })),

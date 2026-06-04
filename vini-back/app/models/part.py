@@ -13,6 +13,9 @@ class PartCategory(SQLModel, table=True):
     name: str = Field(max_length=100, nullable=False)
     slug: str = Field(max_length=100, unique=True, nullable=False)
     parent_id: int | None = Field(default=None, foreign_key="part_categories.id")
+    icon: str | None = Field(default=None, max_length=50)
+    image_url: str | None = Field(default=None, max_length=500)
+    sort_order: int = Field(default=0, nullable=False)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -58,6 +61,7 @@ class PartCompatibility(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     part_id: int = Field(foreign_key="parts.id", nullable=False)
     model_year_id: int = Field(foreign_key="model_years.id", nullable=False, index=True)
+    specific_year: int | None = Field(default=None)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
 
     part: Optional[Part] = Relationship(back_populates="compatibilities")

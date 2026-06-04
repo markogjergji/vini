@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import { useUploadStore } from "../../stores/uploadStore";
-import { getMakes, getModels, getYears } from "../../api/vehicles";
+import { getAvailableYears, getMakesByYear, getModels, getTrims } from "../../api/vehicles";
 import { getCategories } from "../../api/parts";
 import Dropdown from "../ui/Dropdown";
 import FormSection from "../ui/FormSection";
 import FormField from "../ui/FormField";
 import TextInput from "../ui/TextInput";
+import LocationPicker from "../map/LocationPicker";
+import type { LocationValue } from "../map/LocationPicker";
 
 const inputCls =
   "border border-gray-200 bg-white px-3 py-2 text-sm w-full focus:outline-none focus:border-gray-400 transition-colors";
@@ -14,33 +16,41 @@ export default function PartForm() {
   const store = useUploadStore();
 
   useEffect(() => {
-    getMakes().then((m) => store.set({ makes: m }));
+    getAvailableYears().then((y) => store.set({ availableYears: y }));
     getCategories().then((c) => store.set({ categories: c }));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (store.currentMakeId) {
-      getModels(store.currentMakeId).then((m) => store.set({ models: m }));
+    if (store.currentYear !== null) {
+      getMakesByYear(store.currentYear).then((m) => store.set({ makes: m }));
+    }
+  }, [store.currentYear]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (store.currentMakeId && store.currentYear !== null) {
+      getModels(store.currentMakeId, store.currentYear).then((m) => store.set({ models: m }));
     }
   }, [store.currentMakeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (store.currentModelId) {
-      getYears(store.currentModelId).then((y) => store.set({ years: y }));
+    if (store.currentModelId && store.currentYear !== null) {
+      getTrims(store.currentModelId, store.currentYear).then((y) => store.set({ years: y }));
     }
   }, [store.currentModelId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAddCompat = () => {
-    if (!store.currentMakeId || !store.currentModelId || !store.currentYearId) return;
+    if (!store.currentMakeId || !store.currentModelId || !store.currentYearId || store.currentYear === null) return;
     const make = store.makes.find((m) => m.id === store.currentMakeId);
     const model = store.models.find((m) => m.id === store.currentModelId);
-    const year = store.years.find((y) => y.id === store.currentYearId);
-    if (!make || !model || !year) return;
+    const trim = store.years.find((y) => y.id === store.currentYearId);
+    if (!make || !model || !trim) return;
+    const trimSuffix = trim.generation ? ` · ${trim.generation}` : "";
     store.addCompat({
       makeId: make.id,
       modelId: model.id,
-      modelYearId: year.id,
-      label: `${make.name} ${model.name} ${year.year_start}–${year.year_end}`,
+      modelYearId: trim.id,
+      selectedYear: store.currentYear,
+      label: `${make.name} ${model.name} ${store.currentYear}${trimSuffix}`,
     });
   };
 
@@ -126,13 +136,38 @@ export default function PartForm() {
           </h2>
         </div>
         <div className="px-5 py-4">
-          <div className="flex gap-2 items-end">
+          <div className="grid grid-cols-2 gap-2">
             <Dropdown
               size="md"
-              className="border border-gray-200 flex-1"
+              className="border border-gray-200"
+              placeholder="Year"
+              value={store.currentYear}
+              options={(store.availableYears ?? [])
+                .slice()
+                .sort((a, b) => b - a)
+                .map((y) => ({ value: y, label: String(y) }))}
+              onChange={(v) =>
+                store.set({
+                  currentYear: v !== null ? Number(v) : null,
+                  currentMakeId: null,
+                  currentModelId: null,
+                  currentYearId: null,
+                  makes: [],
+                  models: [],
+                  years: [],
+                })
+              }
+            />
+            <Dropdown
+              size="md"
+              className="border border-gray-200"
               placeholder="Make"
               value={store.currentMakeId}
-              options={store.makes.map((m) => ({ value: m.id, label: m.name }))}
+              options={store.makes.map((m) => ({
+                value: m.id,
+                label: m.name,
+                icon: `/brand-logos/${m.name.toLowerCase().replace(/[\s/]+/g, "-")}.png`,
+              }))}
               onChange={(v) =>
                 store.set({
                   currentMakeId: v !== null ? Number(v) : null,
@@ -142,10 +177,11 @@ export default function PartForm() {
                   years: [],
                 })
               }
+              disabled={store.currentYear === null}
             />
             <Dropdown
               size="md"
-              className="border border-gray-200 flex-1"
+              className="border border-gray-200"
               placeholder="Model"
               value={store.currentModelId}
               options={store.models.map((m) => ({ value: m.id, label: m.name }))}
@@ -160,26 +196,26 @@ export default function PartForm() {
             />
             <Dropdown
               size="md"
-              className="border border-gray-200 flex-1"
-              placeholder="Year"
+              className="border border-gray-200"
+              placeholder="Trim"
               value={store.currentYearId}
               options={store.years.map((y) => ({
                 value: y.id,
-                label: `${y.year_start}–${y.year_end}`,
-                sub: y.generation ?? undefined,
+                label: y.generation ?? `${y.year_start}–${y.year_end ?? ""}`,
+                sub: y.generation ? `${y.year_start}–${y.year_end ?? ""}` : undefined,
               }))}
               onChange={(v) => store.set({ currentYearId: v !== null ? Number(v) : null })}
               disabled={!store.currentModelId}
             />
-            <button
-              type="button"
-              onClick={handleAddCompat}
-              disabled={!store.currentYearId}
-              className="bg-zinc-900 text-white px-4 py-2 text-sm font-semibold hover:bg-zinc-700 transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
-            >
-              + Add
-            </button>
           </div>
+          <button
+            type="button"
+            onClick={handleAddCompat}
+            disabled={!store.currentYearId}
+            className="mt-2 w-full bg-zinc-900 text-white px-4 py-2 text-sm font-semibold hover:bg-zinc-700 transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+          >
+            + Add
+          </button>
           {store.compatEntries.length > 0 && (
             <div className="mt-3 space-y-1.5">
               {store.compatEntries.map((e) => (
@@ -217,39 +253,41 @@ export default function PartForm() {
 
       {/* Location */}
       <FormSection title="Location">
-        <button
-          type="button"
-          className="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-500 transition-colors"
-          onClick={() => {
-            navigator.geolocation.getCurrentPosition(
-              (pos) =>
-                store.set({
-                  latitude: pos.coords.latitude,
-                  longitude: pos.coords.longitude,
-                }),
-              () => store.set({ error: "Could not get location" }),
-            );
-          }}
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M19.5 10.5c0 7.142-7.5 11.25-9.5 11.25S.5 17.642.5 10.5a9 9 0 1119 0z"
-            />
-          </svg>
-          Use My Location
-        </button>
-        {store.latitude && store.longitude && (
-          <p className="text-xs text-gray-500 font-mono bg-gray-50 border border-gray-200 px-3 py-2">
-            {store.latitude.toFixed(4)}, {store.longitude.toFixed(4)}
-          </p>
+        {store.sellerLatitude !== null && (
+          <button
+            type="button"
+            className="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-500 transition-colors"
+            onClick={() =>
+              store.set({
+                latitude: store.sellerLatitude,
+                longitude: store.sellerLongitude,
+                locationText: [store.sellerCity, store.sellerAddress]
+                  .filter(Boolean)
+                  .join(", "),
+              })
+            }
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-9.5 11.25S.5 17.642.5 10.5a9 9 0 1119 0z" />
+            </svg>
+            Use Shop Location
+          </button>
         )}
-        <TextInput
-          label="Address"
-          value={store.locationText}
-          onChange={(v) => store.set({ locationText: v })}
+        <LocationPicker
+          value={{
+            latitude: store.latitude,
+            longitude: store.longitude,
+            address: store.locationText,
+            city: "",
+          }}
+          onChange={(loc: LocationValue) =>
+            store.set({
+              latitude: loc.latitude,
+              longitude: loc.longitude,
+              locationText: [loc.city, loc.address].filter(Boolean).join(", "),
+            })
+          }
         />
       </FormSection>
     </div>

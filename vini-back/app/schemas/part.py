@@ -12,6 +12,25 @@ class PartCategoryRead(BaseModel):
     name: str
     slug: str
     parent_id: int | None
+    icon: str | None = None
+    image_url: str | None = None
+    sort_order: int = 0
+
+
+class PartCategoryCreate(BaseModel):
+    name: str
+    slug: str
+    parent_id: int | None = None
+    icon: str | None = None
+    sort_order: int = 0
+
+
+class PartCategoryUpdate(BaseModel):
+    name: str | None = None
+    slug: str | None = None
+    parent_id: int | None = None
+    icon: str | None = None
+    sort_order: int | None = None
 
 
 class PartImageRead(BaseModel):
@@ -22,8 +41,14 @@ class PartImageRead(BaseModel):
     sort_order: int
 
 
+class CompatVehicleInput(BaseModel):
+    model_year_id: int
+    specific_year: int | None = None
+
+
 class CompatibleVehicle(BaseModel):
     model_year_id: int
+    specific_year: int | None
     make: MakeRead
     model: ModelRead
     model_year: ModelYearRead
@@ -41,7 +66,25 @@ class PartCreate(BaseModel):
     location_text: str | None = None
     latitude: float | None = None
     longitude: float | None = None
-    compatible_model_year_ids: list[int] = []
+    compatible_vehicles: list[CompatVehicleInput] = []
+
+
+class ImageReorderRequest(BaseModel):
+    image_ids: list[int]
+
+
+class PartUpdate(BaseModel):
+    category_id: int | None = None
+    title: str
+    description: str | None = None
+    price: float | None = None
+    currency: str = "ALL"
+    condition: PartCondition
+    oem_number: str | None = None
+    location_text: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    compatible_vehicles: list[CompatVehicleInput] = []
 
 
 class PartListItem(BaseModel):
@@ -55,6 +98,7 @@ class PartListItem(BaseModel):
     created_at: datetime
     primary_image_url: str | None
     category: PartCategoryRead | None
+    vehicle_label: str | None
 
 
 class PartSearchResponse(BaseModel):

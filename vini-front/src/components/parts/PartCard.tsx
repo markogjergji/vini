@@ -39,11 +39,20 @@ export default function PartCard({ part }: Props) {
           </div>
         )}
 
-        {/* Category badge */}
-        {part.category && (
-          <span className="absolute top-2 left-2 bg-white/90 text-gray-700 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 border border-gray-200">
-            {part.category.name}
-          </span>
+        {/* Category + vehicle badges */}
+        {(part.category || part.vehicle_label) && (
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {part.category && (
+              <span className="bg-white/90 text-gray-700 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 border border-gray-200 self-start">
+                {part.category.name}
+              </span>
+            )}
+            {part.vehicle_label && (
+              <span className="bg-black/65 text-white text-[10px] font-medium px-2 py-0.5 self-start">
+                {part.vehicle_label}
+              </span>
+            )}
+          </div>
         )}
       </div>
 

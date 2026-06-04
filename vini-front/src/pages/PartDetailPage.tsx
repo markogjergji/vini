@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { usePartStore } from "../stores/partStore";
-import { getPartById } from "../api/parts";
+import { getPartById, getCategories } from "../api/parts";
+import type { PartCategory } from "../types";
 import PartImages from "../components/parts/PartImages";
 import SellerInfo from "../components/parts/SellerInfo";
 import LocationMap from "../components/map/LocationMap";
@@ -17,6 +18,11 @@ const CONDITION_STYLES: Record<string, string> = {
 export default function PartDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { part, loading, error, setPart, setLoading, setError } = usePartStore();
+  const [allCategories, setAllCategories] = useState<PartCategory[]>([]);
+
+  useEffect(() => {
+    getCategories().then(setAllCategories);
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -62,18 +68,39 @@ export default function PartDetailPage() {
   const lng = part.longitude ?? part.seller.longitude;
   const conditionStyle = CONDITION_STYLES[part.condition] ?? "bg-gray-100 text-gray-600 border-gray-200";
 
+  const category = part.category;
+  const parentCategory = category?.parent_id
+    ? allCategories.find((c) => c.id === category.parent_id) ?? null
+    : null;
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-6">
         <Link to="/" className="hover:text-gray-700 transition-colors no-underline">Home</Link>
-        <span>/</span>
-        {part.category && (
+        {parentCategory && (
           <>
-            <span>{part.category.name}</span>
             <span>/</span>
+            <Link
+              to={`/search?category_id=${parentCategory.id}&category_name=${encodeURIComponent(parentCategory.name)}`}
+              className="hover:text-gray-700 transition-colors no-underline"
+            >
+              {parentCategory.name}
+            </Link>
           </>
         )}
+        {category && (
+          <>
+            <span>/</span>
+            <Link
+              to={`/search?category_id=${category.id}&category_name=${encodeURIComponent(category.name)}`}
+              className="hover:text-gray-700 transition-colors no-underline"
+            >
+              {category.name}
+            </Link>
+          </>
+        )}
+        <span>/</span>
         <span className="text-gray-700 font-medium truncate max-w-xs">{part.title}</span>
       </nav>
 
@@ -152,7 +179,10 @@ export default function PartDetailPage() {
               >
                 <Car className="w-3.5 h-3.5 text-gray-400" />
                 <span className="font-medium">{v.make.name} {v.model.name}</span>
-                <span className="text-gray-400">{v.model_year.year_start}–{v.model_year.year_end}{v.model_year.generation ? ` · ${v.model_year.generation}` : ""}</span>
+                <span className="text-gray-400">
+                  {v.specific_year ?? v.model_year.year_start}
+                  {v.model_year.generation ? ` · ${v.model_year.generation}` : ""}
+                </span>
               </span>
             ))}
           </div>

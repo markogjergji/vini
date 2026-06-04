@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMySeller } from "../api/sellers";
-import { searchParts } from "../api/parts";
+import { searchParts, deletePart } from "../api/parts";
 import PartCard from "../components/parts/PartCard";
+import ConfirmModal from "../components/ui/ConfirmModal";
 import type { PartListItem } from "../types";
 
 export default function MyPartsPage() {
@@ -10,6 +11,8 @@ export default function MyPartsPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PartListItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     getMySeller()
@@ -21,6 +24,21 @@ export default function MyPartsPage() {
       .catch(() => setError("Failed to load your listings."))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deletePart(deleteTarget.id);
+      setParts((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+      setTotal((t) => t - 1);
+    } catch {
+      setError("Failed to delete listing.");
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -60,9 +78,38 @@ export default function MyPartsPage() {
       {parts.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {parts.map((part) => (
-            <PartCard key={part.id} part={part} />
+            <div key={part.id} className="flex flex-col">
+              <PartCard part={part} />
+              <div className="flex border border-t-0 border-gray-200">
+                <Link
+                  to={`/parts/${part.id}/edit`}
+                  className="flex-1 text-center text-xs font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-50 py-2 transition-colors no-underline border-r border-gray-200"
+                >
+                  Edit
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setDeleteTarget(part)}
+                  className="flex-1 text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 py-2 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
           ))}
         </div>
+      )}
+
+      {deleteTarget && (
+        <ConfirmModal
+          title="Delete Listing"
+          message={`Are you sure you want to delete "${deleteTarget.title}"? This cannot be undone.`}
+          confirmLabel={deleting ? "Deleting…" : "Delete"}
+          cancelLabel="Cancel"
+          variant="danger"
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 import SearchBar from "../components/search/SearchBar";
 import CategoryGrid from "../components/home/CategoryGrid";
+import ShopsMap from "../components/map/ShopsMap";
 import heroBg from "../assets/cars.jpg";
 
 export default function SearchPage() {
@@ -35,7 +36,8 @@ export default function SearchPage() {
       {/* Category grid */}
       <CategoryGrid />
 
-
+      {/* Shops map */}
+      <ShopsMap />
     </div>
   );
 }

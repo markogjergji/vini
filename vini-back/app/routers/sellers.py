@@ -20,6 +20,12 @@ def _seller_to_read(seller) -> SellerRead:
     )
 
 
+@router.get("/", response_model=list[SellerRead])
+def list_sellers(session: Session = Depends(get_session)) -> list[SellerRead]:
+    sellers = seller_service.get_all_sellers(session)
+    return [_seller_to_read(s) for s in sellers]
+
+
 @router.get("/me", response_model=SellerRead)
 def get_my_seller(
     current_user: CurrentUser,

@@ -12,7 +12,14 @@ export default function UploadPage() {
 
   useEffect(() => {
     getMySeller().then((seller) => {
-      store.set({ sellerId: seller.id, sellerName: seller.name });
+      store.set({
+        sellerId: seller.id,
+        sellerName: seller.name,
+        sellerLatitude: seller.latitude,
+        sellerLongitude: seller.longitude,
+        sellerCity: seller.city ?? "",
+        sellerAddress: seller.address ?? "",
+      });
     }).catch(() => {
       store.set({ error: "Could not load your seller profile." });
     });
@@ -47,7 +54,7 @@ export default function UploadPage() {
         location_text: store.locationText || undefined,
         latitude: store.latitude ?? undefined,
         longitude: store.longitude ?? undefined,
-        compatible_model_year_ids: store.compatEntries.map((e) => e.modelYearId),
+        compatible_vehicles: store.compatEntries.map((e) => ({ model_year_id: e.modelYearId, specific_year: e.selectedYear })),
       });
 
       // Upload images

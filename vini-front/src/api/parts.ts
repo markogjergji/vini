@@ -6,6 +6,8 @@ export async function searchParts(params: {
   model_id?: number;
   model_year_id?: number;
   seller_id?: number;
+  category_id?: number;
+  year?: number;
   page?: number;
   limit?: number;
 }): Promise<PartSearchResponse> {
@@ -35,4 +37,21 @@ export async function uploadPartImages(partId: number, files: File[]): Promise<P
 export async function getCategories(): Promise<PartCategory[]> {
   const res = await client.get<PartCategory[]>("/api/parts/categories");
   return res.data;
+}
+
+export async function updatePart(partId: number, data: Omit<PartCreate, "seller_id">): Promise<PartDetail> {
+  const res = await client.put<PartDetail>(`/api/parts/${partId}`, data);
+  return res.data;
+}
+
+export async function deletePart(partId: number): Promise<void> {
+  await client.delete(`/api/parts/${partId}`);
+}
+
+export async function deletePartImage(partId: number, imageId: number): Promise<void> {
+  await client.delete(`/api/parts/${partId}/images/${imageId}`);
+}
+
+export async function reorderPartImages(partId: number, imageIds: number[]): Promise<void> {
+  await client.patch(`/api/parts/${partId}/images/reorder`, { image_ids: imageIds });
 }

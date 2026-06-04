@@ -22,6 +22,9 @@ export interface PartCategory {
   name: string;
   slug: string;
   parent_id: number | null;
+  icon: string | null;
+  image_url: string | null;
+  sort_order: number;
 }
 
 export interface PartImage {
@@ -48,6 +51,7 @@ export interface Seller {
 
 export interface CompatibleVehicle {
   model_year_id: number;
+  specific_year: number | null;
   make: Make;
   model: VehicleModel;
   model_year: ModelYear;
@@ -64,6 +68,7 @@ export interface PartListItem {
   created_at: string;
   primary_image_url: string | null;
   category: PartCategory | null;
+  vehicle_label: string | null;
 }
 
 export interface PartSearchResponse {
@@ -112,11 +117,18 @@ export interface SellerUpdate {
   business_name?: string;
   address?: string;
   city?: string;
+  latitude?: number | null;
+  longitude?: number | null;
   is_business?: boolean;
 }
 
 export interface UserProfileUpdate {
   full_name?: string;
+}
+
+export interface CompatVehicleInput {
+  model_year_id: number;
+  specific_year: number | null;
 }
 
 export interface PartCreate {
@@ -131,7 +143,7 @@ export interface PartCreate {
   location_text?: string;
   latitude?: number;
   longitude?: number;
-  compatible_model_year_ids: number[];
+  compatible_vehicles: CompatVehicleInput[];
 }
 
 // ── Auth / User ───────────────────────────────────────────────────────────────
@@ -207,4 +219,6 @@ export interface PartAdmin {
   seller_name: string | null;
   category_name: string | null;
   created_at: string;
+  primary_image_url: string | null;
+  vehicle_label: string | null;
 }

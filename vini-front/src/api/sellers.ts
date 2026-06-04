@@ -20,3 +20,8 @@ export async function updateMySeller(data: SellerUpdate): Promise<Seller> {
   const res = await client.put<Seller>("/api/sellers/me", data);
   return res.data;
 }
+
+export async function getAllSellers(): Promise<Seller[]> {
+  const res = await client.get<Seller[]>("/api/sellers/");
+  return res.data;
+}

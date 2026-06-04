@@ -20,6 +20,10 @@ def get_seller_by_user_id(session: Session, user_id: int) -> Seller | None:
     return session.exec(select(Seller).where(Seller.user_id == user_id)).first()
 
 
+def get_all_sellers(session: Session) -> list[Seller]:
+    return list(session.exec(select(Seller)).all())
+
+
 def update_seller(session: Session, seller: Seller, data: SellerUpdate) -> Seller:
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(seller, field, value)

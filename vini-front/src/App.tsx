@@ -7,11 +7,14 @@ import PartDetailPage from "./pages/PartDetailPage";
 import UploadPage from "./pages/UploadPage";
 import ProfilePage from "./pages/ProfilePage";
 import MyPartsPage from "./pages/MyPartsPage";
+import EditPartPage from "./pages/EditPartPage";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminSellersPage from "./pages/admin/AdminSellersPage";
 import AdminPartsPage from "./pages/admin/AdminPartsPage";
+import AdminBrandsPage from "./pages/admin/AdminBrandsPage";
+import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
 import ShopPage from "./pages/ShopPage";
 
 export default function App() {
@@ -30,6 +33,8 @@ export default function App() {
         <Route path="users" element={<AdminUsersPage />} />
         <Route path="sellers" element={<AdminSellersPage />} />
         <Route path="parts" element={<AdminPartsPage />} />
+        <Route path="brands" element={<AdminBrandsPage />} />
+        <Route path="categories" element={<AdminCategoriesPage />} />
       </Route>
 
       {/* Main site */}
@@ -51,6 +56,14 @@ export default function App() {
           element={
             <ProtectedRoute requiredRole="seller">
               <MyPartsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/parts/:id/edit"
+          element={
+            <ProtectedRoute requiredRole="seller">
+              <EditPartPage />
             </ProtectedRoute>
           }
         />

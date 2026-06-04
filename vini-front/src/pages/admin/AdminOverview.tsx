@@ -25,16 +25,16 @@ export default function AdminOverview() {
   }, []);
 
   if (!stats) {
-    return <div className="text-gray-500 text-sm">Loading stats...</div>;
+    return <div className="text-gray-500 text-sm">Duke ngarkuar statistikat...</div>;
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Paneli</h1>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard label="Total Users" value={stats.users} icon={Users} color="bg-blue-500" />
-        <StatCard label="Sellers" value={stats.sellers} icon={Store} color="bg-emerald-500" />
-        <StatCard label="Parts Listed" value={stats.parts} icon={Package} color="bg-orange-500" />
+        <StatCard label="Gjithsej Përdorues" value={stats.users} icon={Users} color="bg-blue-500" />
+        <StatCard label="Shitës" value={stats.sellers} icon={Store} color="bg-emerald-500" />
+        <StatCard label="Pjesë të Listuara" value={stats.parts} icon={Package} color="bg-orange-500" />
       </div>
     </div>
   );

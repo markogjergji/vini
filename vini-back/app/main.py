@@ -1,13 +1,16 @@
+import asyncio
 from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlmodel import Session, select
 
 from app.config import settings
-from app.database import init_db
-from app.seed.seed_vehicles import seed
+from app.database import engine, init_db
+from app.seed.seed_vehicles import seed as seed_categories
+from app.seed.seed_vividracing import _seed_async as seed_vehicles_async
 
 # Import all models so SQLModel.metadata is populated before create_all
 import app.models.user  # noqa: F401
@@ -15,11 +18,21 @@ import app.models.seller  # noqa: F401
 import app.models.vehicle  # noqa: F401
 import app.models.part  # noqa: F401
 
+from app.models.vehicle import Make
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     init_db()
-    seed()
+    seed_categories()
+
+    with Session(engine) as session:
+        has_makes = session.exec(select(Make)).first()
+
+    if not has_makes:
+        print("No vehicles found — starting vividracing seed in background...")
+        asyncio.create_task(seed_vehicles_async())
+
     yield
 
 

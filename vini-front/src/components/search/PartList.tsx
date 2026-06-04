@@ -6,7 +6,7 @@ export default function PartList() {
   const {
     results, total, page, limit, loading, error,
     setResults, setPage, setLoading, setError,
-    selectedMakeId, selectedModelId, selectedYearId,
+    selectedMakeId, selectedModelId, selectedTrimId,
   } = useSearchStore();
 
   const totalPages = Math.ceil(total / limit);
@@ -18,7 +18,7 @@ export default function PartList() {
       const res = await searchParts({
         make_id:       selectedMakeId  ?? undefined,
         model_id:      selectedModelId ?? undefined,
-        model_year_id: selectedYearId  ?? undefined,
+        model_year_id: selectedTrimId  ?? undefined,
         page: newPage,
         limit,
       });
