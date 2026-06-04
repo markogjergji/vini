@@ -17,6 +17,8 @@ export default function ResultsPage() {
   const trimId      = searchParams.get("trim_id")      ? Number(searchParams.get("trim_id"))      : null;
   const year        = searchParams.get("year")         ? Number(searchParams.get("year"))         : null;
   const categoryId  = searchParams.get("category_id") ? Number(searchParams.get("category_id")) : null;
+  const condition   = searchParams.get("condition")    ?? undefined;
+  const sort        = searchParams.get("sort")         ?? "newest";
 
   const makeName     = searchParams.get("make")          ?? null;
   const modelName    = searchParams.get("model")         ?? null;
@@ -48,6 +50,8 @@ export default function ResultsPage() {
           model_year_id: trimId      ?? undefined,
           category_id:   categoryId  ?? undefined,
           year:          year        ?? undefined,
+          condition,
+          sort,
           page: 1,
           limit,
         });

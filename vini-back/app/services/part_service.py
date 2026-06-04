@@ -138,6 +138,8 @@ def search_parts(
     seller_id: int | None = None,
     category_id: int | None = None,
     year: int | None = None,
+    condition: str | None = None,
+    sort: str = "newest",
     page: int = 1,
     limit: int = 20,
 ) -> PartSearchResponse:
@@ -149,6 +151,9 @@ def search_parts(
 
     if seller_id:
         query = query.where(Part.seller_id == seller_id)
+
+    if condition:
+        query = query.where(Part.condition == condition)
 
     if category_id:
         child_ids = [
@@ -187,8 +192,15 @@ def search_parts(
     total = session.exec(count_query).one()
 
     # Paginate
+    if sort == "price_asc":
+        order_col = col(Part.price).asc()
+    elif sort == "price_desc":
+        order_col = col(Part.price).desc()
+    else:
+        order_col = col(Part.created_at).desc()
+
     offset = (page - 1) * limit
-    results = session.exec(query.order_by(col(Part.created_at).desc()).offset(offset).limit(limit)).all()
+    results = session.exec(query.order_by(order_col).offset(offset).limit(limit)).all()
 
     items: list[PartListItem] = []
     for part in results:

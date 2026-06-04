@@ -1,3 +1,4 @@
+import { useSearchParams } from "react-router-dom";
 import { useSearchStore } from "../../stores/searchStore";
 import PartCard from "../parts/PartCard";
 import { searchParts } from "../../api/parts";
@@ -9,6 +10,12 @@ export default function PartList() {
     selectedMakeId, selectedModelId, selectedTrimId,
   } = useSearchStore();
 
+  const [searchParams] = useSearchParams();
+  const categoryId = searchParams.get("category_id") ? Number(searchParams.get("category_id")) : undefined;
+  const year       = searchParams.get("year")         ? Number(searchParams.get("year"))         : undefined;
+  const condition  = searchParams.get("condition")    ?? undefined;
+  const sort       = searchParams.get("sort")         ?? "newest";
+
   const totalPages = Math.ceil(total / limit);
 
   const goToPage = async (newPage: number) => {
@@ -19,6 +26,10 @@ export default function PartList() {
         make_id:       selectedMakeId  ?? undefined,
         model_id:      selectedModelId ?? undefined,
         model_year_id: selectedTrimId  ?? undefined,
+        category_id:   categoryId,
+        year,
+        condition,
+        sort,
         page: newPage,
         limit,
       });

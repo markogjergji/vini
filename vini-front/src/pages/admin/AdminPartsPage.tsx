@@ -14,6 +14,7 @@ import ConfirmModal from "../../components/ui/ConfirmModal";
 import LocationPicker from "../../components/map/LocationPicker";
 
 const API_BASE = "http://localhost:8000";
+const imgUrl = (url: string) => url.startsWith("http") ? url : `${API_BASE}${url}`;
 const PAGE_SIZE = 50;
 
 type ConfirmState = {
@@ -535,7 +536,7 @@ export default function AdminPartsPage() {
                       <div className="flex items-center gap-2.5">
                         {p.primary_image_url ? (
                           <img
-                            src={`${API_BASE}${p.primary_image_url}`}
+                            src={imgUrl(p.primary_image_url!)}
                             alt=""
                             className="w-9 h-9 rounded-md object-cover flex-shrink-0 border border-gray-100"
                           />

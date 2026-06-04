@@ -34,7 +34,45 @@ def get_stats(admin: AdminUser, session: DBSession):
     user_count = session.exec(select(func.count()).select_from(User)).one()
     seller_count = session.exec(select(func.count()).select_from(Seller)).one()
     part_count = session.exec(select(func.count()).select_from(Part)).one()
-    return {"users": user_count, "sellers": seller_count, "parts": part_count}
+
+    # Parts by status
+    parts_by_status_rows = session.exec(
+        select(Part.status, func.count()).group_by(Part.status)
+    ).all()
+    parts_by_status = {row[0]: row[1] for row in parts_by_status_rows}
+
+    # Parts by condition
+    parts_by_condition_rows = session.exec(
+        select(Part.condition, func.count()).group_by(Part.condition)
+    ).all()
+    parts_by_condition = {row[0]: row[1] for row in parts_by_condition_rows}
+
+    # Users by role
+    users_by_role_rows = session.exec(
+        select(User.role, func.count()).group_by(User.role)
+    ).all()
+    users_by_role = {row[0]: row[1] for row in users_by_role_rows}
+
+    # Sellers: verified vs unverified
+    sellers_verified = session.exec(
+        select(func.count()).select_from(Seller).where(Seller.is_verified == True)
+    ).one()
+    sellers_business = session.exec(
+        select(func.count()).select_from(Seller).where(Seller.is_business == True)
+    ).one()
+
+    return {
+        "users": user_count,
+        "sellers": seller_count,
+        "parts": part_count,
+        "parts_by_status": parts_by_status,
+        "parts_by_condition": parts_by_condition,
+        "users_by_role": users_by_role,
+        "sellers_verified": sellers_verified,
+        "sellers_unverified": seller_count - sellers_verified,
+        "sellers_business": sellers_business,
+        "sellers_individual": seller_count - sellers_business,
+    }
 
 
 # ── Users ─────────────────────────────────────────────────────────────────────
@@ -682,3 +720,60 @@ def delete_part(part_id: int, admin: AdminUser, session: DBSession):
         raise HTTPException(status_code=404, detail="Part not found")
     session.delete(part)
     session.commit()
+
+
+# ── Makes (brand management) ──────────────────────────────────────────────────
+
+from app.services import vehicle_service  # noqa: E402
+
+
+class MakeAdminRead(BaseModel):
+    id: int
+    name: str
+    is_active: bool
+    model_count: int
+    generation_count: int
+
+
+@router.get("/makes", response_model=list[MakeAdminRead])
+def admin_list_makes(
+    admin: AdminUser,
+    session: DBSession,
+    is_active: Optional[bool] = None,
+    year: Optional[int] = None,
+):
+    rows = vehicle_service.get_all_makes_admin(session, is_active=is_active, year=year)
+    return [
+        MakeAdminRead(
+            id=r.id,
+            name=r.name,
+            is_active=r.is_active,
+            model_count=r.model_count,
+            generation_count=r.generation_count,
+        )
+        for r in rows
+    ]
+
+
+@router.patch("/makes/{make_id}/activate")
+def activate_make(make_id: int, admin: AdminUser, session: DBSession):
+    make = session.get(Make, make_id)
+    if not make:
+        raise HTTPException(status_code=404, detail="Make not found")
+    make.is_active = True
+    make.updated_at = datetime.now(timezone.utc)
+    session.add(make)
+    session.commit()
+    return {"ok": True}
+
+
+@router.patch("/makes/{make_id}/deactivate")
+def deactivate_make(make_id: int, admin: AdminUser, session: DBSession):
+    make = session.get(Make, make_id)
+    if not make:
+        raise HTTPException(status_code=404, detail="Make not found")
+    make.is_active = False
+    make.updated_at = datetime.now(timezone.utc)
+    session.add(make)
+    session.commit()
+    return {"ok": True}

@@ -113,7 +113,7 @@ export default function SearchBar() {
         onClick={handleSearch}
         className="h-12 px-7 bg-red-600 text-white text-sm font-bold uppercase tracking-wide hover:bg-red-500 active:bg-red-700 transition-colors whitespace-nowrap border-t border-gray-200 sm:border-t-0"
       >
-        Search
+        Kërko
       </button>
     </div>
   );

@@ -6,6 +6,7 @@ interface Props {
 }
 
 const API_BASE = "http://localhost:8000";
+const imgUrl = (url: string) => url.startsWith("http") ? url : `${API_BASE}${url}`;
 
 export default function PartImages({ images }: Props) {
   const [selected, setSelected] = useState(0);
@@ -29,7 +30,7 @@ export default function PartImages({ images }: Props) {
       {/* Main image */}
       <div className="relative aspect-[4/3] bg-gray-100 border border-gray-200 overflow-hidden group">
         <img
-          src={`${API_BASE}${images[selected].url}`}
+          src={imgUrl(images[selected].url)}
           alt="Part"
           className="w-full h-full object-contain"
         />
@@ -74,7 +75,7 @@ export default function PartImages({ images }: Props) {
                 i === selected ? "border-blue-500" : "border-gray-200 hover:border-gray-400",
               ].join(" ")}
             >
-              <img src={`${API_BASE}${img.url}`} alt="" className="w-full h-full object-cover" />
+              <img src={imgUrl(img.url)} alt="" className="w-full h-full object-cover" />
             </button>
           ))}
         </div>

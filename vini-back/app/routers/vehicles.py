@@ -15,14 +15,14 @@ def list_available_years(session: Session = Depends(get_session)) -> list[int]:
 
 @router.get("/years/{year}/makes", response_model=list[MakeRead])
 def list_makes_by_year(year: int, session: Session = Depends(get_session)) -> list[MakeRead]:
-    makes = vehicle_service.get_makes_by_year(session, year)
-    return [MakeRead(id=m.id, name=m.name) for m in makes]  # type: ignore[arg-type]
+    rows = vehicle_service.get_makes_by_year(session, year)
+    return [MakeRead(id=r.id, name=r.name, is_active=r.is_active, model_count=r.model_count, generation_count=r.generation_count) for r in rows]
 
 
 @router.get("/makes", response_model=list[MakeRead])
 def list_makes(session: Session = Depends(get_session)) -> list[MakeRead]:
-    makes = vehicle_service.get_makes(session)
-    return [MakeRead(id=m.id, name=m.name) for m in makes]  # type: ignore[arg-type]
+    rows = vehicle_service.get_makes(session)
+    return [MakeRead(id=r.id, name=r.name, is_active=r.is_active, model_count=r.model_count, generation_count=r.generation_count) for r in rows]
 
 
 @router.get("/makes/{make_id}/models", response_model=list[ModelRead])

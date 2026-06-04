@@ -1,6 +1,9 @@
 export interface Make {
   id: number;
   name: string;
+  is_active: boolean;
+  model_count: number;
+  generation_count: number;
 }
 
 export interface VehicleModel {
@@ -185,6 +188,13 @@ export interface AdminStats {
   users: number;
   sellers: number;
   parts: number;
+  parts_by_status: Record<string, number>;
+  parts_by_condition: Record<string, number>;
+  users_by_role: Record<string, number>;
+  sellers_verified: number;
+  sellers_unverified: number;
+  sellers_business: number;
+  sellers_individual: number;
 }
 
 export interface SellerAdmin {

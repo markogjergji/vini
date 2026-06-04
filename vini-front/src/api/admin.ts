@@ -185,3 +185,25 @@ export async function updateAdminPart(
 export async function deletePart(id: number): Promise<void> {
   await client.delete(`/api/admin/parts/${id}`);
 }
+
+// Makes
+export interface AdminMake {
+  id: number;
+  name: string;
+  is_active: boolean;
+  model_count: number;
+  generation_count: number;
+}
+
+export async function getAdminMakes(params?: { is_active?: boolean; year?: number }): Promise<AdminMake[]> {
+  const res = await client.get<AdminMake[]>("/api/admin/makes", { params });
+  return res.data;
+}
+
+export async function activateMake(id: number): Promise<void> {
+  await client.patch(`/api/admin/makes/${id}/activate`);
+}
+
+export async function deactivateMake(id: number): Promise<void> {
+  await client.patch(`/api/admin/makes/${id}/deactivate`);
+}

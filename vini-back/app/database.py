@@ -16,6 +16,7 @@ def _run_migrations() -> None:
             "ALTER TABLE part_categories ADD COLUMN image_url VARCHAR(500)",
             "ALTER TABLE part_categories ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0",
             "ALTER TABLE part_compatibilities ADD COLUMN specific_year INTEGER",
+            "ALTER TABLE makes ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT 1",
         ]:
             try:
                 conn.execute(text(stmt))

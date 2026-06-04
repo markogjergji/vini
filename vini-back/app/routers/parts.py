@@ -26,11 +26,13 @@ def search_parts(
     seller_id: int | None = None,
     category_id: int | None = None,
     year: int | None = None,
+    condition: str | None = None,
+    sort: str = "newest",
     page: int = 1,
     limit: int = 20,
     session: Session = Depends(get_session),
 ) -> PartSearchResponse:
-    return part_service.search_parts(session, make_id, model_id, model_year_id, seller_id, category_id, year, page, limit)
+    return part_service.search_parts(session, make_id, model_id, model_year_id, seller_id, category_id, year, condition, sort, page, limit)
 
 
 @router.get("/categories", response_model=list[PartCategoryRead])

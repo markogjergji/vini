@@ -23,7 +23,7 @@ from app.database import engine, init_db
 from app.models.vehicle import Make, Model, ModelYear
 
 VIVIDRACING_BASE = "https://www.vividracing.com/vehicles/request-input"
-YEAR_RANGE = range(2005, 2028)
+YEAR_RANGE = range(1990, 2028)
 CONCURRENT_REQUESTS = 3
 DELAY_BETWEEN_YEARS = 1.5  # seconds — stay under Cloudflare rate limits
 RETRY_ATTEMPTS = 3

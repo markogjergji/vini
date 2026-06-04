@@ -7,6 +7,7 @@ import { getPartById, updatePart, uploadPartImages, deletePartImage, reorderPart
 import type { PartImage } from "../types";
 
 const API_BASE = "http://localhost:8000";
+const imgUrl = (url: string) => url.startsWith("http") ? url : `${API_BASE}${url}`;
 
 export default function EditPartPage() {
   const { id } = useParams<{ id: string }>();
@@ -167,7 +168,7 @@ export default function EditPartPage() {
                     className="relative w-24 h-24 border border-gray-200 bg-gray-50 group cursor-grab active:cursor-grabbing select-none"
                   >
                     <img
-                      src={`${API_BASE}${img.url}`}
+                      src={imgUrl(img.url)}
                       alt=""
                       className="w-full h-full object-cover pointer-events-none"
                     />

@@ -7,6 +7,7 @@ interface Props {
 }
 
 const API_BASE = "http://localhost:8000";
+const imgUrl = (url: string) => url.startsWith("http") ? url : `${API_BASE}${url}`;
 
 const CONDITION_STYLES: Record<string, string> = {
   used:          "bg-orange-50 text-orange-600 border-orange-200",
@@ -26,7 +27,7 @@ export default function PartCard({ part }: Props) {
       <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
         {part.primary_image_url ? (
           <img
-            src={`${API_BASE}${part.primary_image_url}`}
+            src={imgUrl(part.primary_image_url!)}
             alt={part.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />

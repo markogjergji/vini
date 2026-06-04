@@ -8,6 +8,8 @@ export async function searchParts(params: {
   seller_id?: number;
   category_id?: number;
   year?: number;
+  condition?: string;
+  sort?: string;
   page?: number;
   limit?: number;
 }): Promise<PartSearchResponse> {

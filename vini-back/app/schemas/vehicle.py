@@ -4,6 +4,9 @@ from pydantic import BaseModel
 class MakeRead(BaseModel):
     id: int
     name: str
+    is_active: bool = True
+    model_count: int = 0
+    generation_count: int = 0
 
 
 class ModelRead(BaseModel):
