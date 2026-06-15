@@ -46,8 +46,6 @@ def authenticate_user(session: Session, username_or_email: str, password: str) -
         user = get_user_by_email(session, username_or_email)
     if not user or not verify_password(password, user.hashed_password):
         return None
-    if not user.is_active:
-        return None
     return user
 
 
@@ -57,21 +55,26 @@ def build_token_response(user: User) -> TokenResponse:
 
 
 def assign_seller_role(session: Session, user: User, seller_data: dict) -> Seller:
-    """Promote a user to seller and create their shop."""
-    existing = session.exec(select(Seller).where(Seller.user_id == user.id)).first()
-    if existing:
-        raise ValueError("User already has a seller profile")
+    """Promote a user to seller, restoring their existing shop if they had one.
 
-    seller = Seller(
-        user_id=user.id,
-        name=seller_data.get("name", user.full_name),
-        phone=seller_data.get("phone"),
-        email=seller_data.get("email", user.email),
-        business_name=seller_data.get("business_name"),
-        city=seller_data.get("city"),
-        is_business=seller_data.get("is_business", False),
-    )
-    session.add(seller)
+    A user owns at most one shop for their lifetime. If the user was previously a
+    seller and got demoted, the original Seller row is still bound to them, so we
+    restore that shop unchanged instead of creating a duplicate. The supplied
+    ``seller_data`` only seeds a brand-new shop; an existing shop is edited
+    through the seller-profile endpoints, not by re-promoting.
+    """
+    seller = session.exec(select(Seller).where(Seller.user_id == user.id)).first()
+    if seller is None:
+        seller = Seller(
+            user_id=user.id,
+            name=seller_data.get("name", user.full_name),
+            phone=seller_data.get("phone"),
+            email=seller_data.get("email", user.email),
+            business_name=seller_data.get("business_name"),
+            city=seller_data.get("city"),
+            is_business=seller_data.get("is_business", False),
+        )
+        session.add(seller)
 
     user.role = UserRole.seller
     user.updated_at = datetime.now(timezone.utc)
@@ -83,12 +86,13 @@ def assign_seller_role(session: Session, user: User, seller_data: dict) -> Selle
 
 
 def revoke_seller_role(session: Session, user: User) -> None:
-    """Demote a seller back to regular user."""
-    seller = session.exec(select(Seller).where(Seller.user_id == user.id)).first()
-    if seller:
-        seller.user_id = None
-        session.add(seller)
+    """Demote a seller back to a regular user.
 
+    The shop record is kept intact and still bound to the user so it can be
+    restored unchanged on re-promotion. It is hidden from public listings while
+    the owner is not an active seller (see the visibility filters in
+    part_service / seller_service), not deleted or orphaned.
+    """
     user.role = UserRole.user
     user.updated_at = datetime.now(timezone.utc)
     session.add(user)

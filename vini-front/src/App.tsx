@@ -7,6 +7,7 @@ import PartDetailPage from "./pages/PartDetailPage";
 import UploadPage from "./pages/UploadPage";
 import ProfilePage from "./pages/ProfilePage";
 import MyPartsPage from "./pages/MyPartsPage";
+import FavoritesPage from "./pages/FavoritesPage";
 import EditPartPage from "./pages/EditPartPage";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminOverview from "./pages/admin/AdminOverview";
@@ -64,6 +65,14 @@ export default function App() {
           element={
             <ProtectedRoute requiredRole="seller">
               <EditPartPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <ProtectedRoute>
+              <FavoritesPage />
             </ProtectedRoute>
           }
         />

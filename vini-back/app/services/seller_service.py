@@ -1,6 +1,7 @@
 from sqlmodel import Session, select
 
 from app.models.seller import Seller
+from app.models.user import User, UserRole
 from app.schemas.seller import SellerCreate, SellerUpdate
 
 
@@ -22,6 +23,26 @@ def get_seller_by_user_id(session: Session, user_id: int) -> Seller | None:
 
 def get_all_sellers(session: Session) -> list[Seller]:
     return list(session.exec(select(Seller)).all())
+
+
+# Public visibility: a shop is only shown while its owner is an active seller.
+# Demoted or deactivated owners keep their shop record, but it stays hidden until
+# the owner is restored to an active seller.
+def _visible_seller_query():
+    return (
+        select(Seller)
+        .join(User, Seller.user_id == User.id)
+        .where(User.is_active == True)  # noqa: E712
+        .where(User.role == UserRole.seller)
+    )
+
+
+def get_visible_sellers(session: Session) -> list[Seller]:
+    return list(session.exec(_visible_seller_query()).all())
+
+
+def get_visible_seller_by_id(session: Session, seller_id: int) -> Seller | None:
+    return session.exec(_visible_seller_query().where(Seller.id == seller_id)).first()
 
 
 def update_seller(session: Session, seller: Seller, data: SellerUpdate) -> Seller:

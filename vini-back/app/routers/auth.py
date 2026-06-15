@@ -28,6 +28,11 @@ def login(data: LoginRequest, session: Annotated[Session, Depends(get_session)])
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
         )
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account has been deactivated. Please contact support.",
+        )
     return build_token_response(user)
 
 

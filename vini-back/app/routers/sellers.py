@@ -22,7 +22,7 @@ def _seller_to_read(seller) -> SellerRead:
 
 @router.get("/", response_model=list[SellerRead])
 def list_sellers(session: Session = Depends(get_session)) -> list[SellerRead]:
-    sellers = seller_service.get_all_sellers(session)
+    sellers = seller_service.get_visible_sellers(session)
     return [_seller_to_read(s) for s in sellers]
 
 
@@ -58,7 +58,7 @@ def create_seller(data: SellerCreate, session: Session = Depends(get_session)) -
 
 @router.get("/{seller_id}", response_model=SellerRead)
 def get_seller(seller_id: int, session: Session = Depends(get_session)) -> SellerRead:
-    seller = seller_service.get_seller_by_id(session, seller_id)
+    seller = seller_service.get_visible_seller_by_id(session, seller_id)
     if not seller:
         raise HTTPException(status_code=404, detail="Seller not found")
     return _seller_to_read(seller)

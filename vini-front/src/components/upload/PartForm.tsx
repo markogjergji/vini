@@ -62,55 +62,61 @@ export default function PartForm() {
       {store.sellerName && (
         <div className="flex items-center gap-2 text-sm text-gray-600 bg-white border border-gray-200 px-5 py-3">
           <span>
-            Listing as <strong className="text-gray-900">{store.sellerName}</strong>
+            Dyqani: <strong className="text-gray-900">{store.sellerName}</strong>
           </span>
         </div>
       )}
 
       {/* Part details */}
-      <FormSection title="Part Details">
+      <FormSection title="Të dhënat e pjesës">
         <TextInput
-          label="Title"
+          label="Titulli"
           required
+          autoFocus
           value={store.title}
           onChange={(v) => store.set({ title: v })}
+          placeholder="p.sh. Faro e majtë, Golf 5"
+          hint="Shkruaj emrin e pjesës ashtu siç do ta kërkonte blerësi."
         />
-        <FormField label="Description">
+        <FormField label="Përshkrimi" optional hint="Detaje shtesë: gjendja, defekte, çfarë përfshihet…">
           <textarea
             className={inputCls}
             rows={3}
             value={store.description}
             onChange={(e) => store.set({ description: e.target.value })}
+            placeholder="p.sh. Pa gërvishtje, e provuar dhe funksionale."
           />
         </FormField>
         <div className="grid grid-cols-2 gap-4">
           <TextInput
-            label="Price (ALL)"
+            label="Çmimi (Lekë)"
+            optional
             type="number"
             value={store.price}
             onChange={(v) => store.set({ price: v })}
+            placeholder="p.sh. 5000"
           />
-          <FormField label="Condition" required>
+          <FormField label="Gjendja" required>
             <Dropdown
               size="md"
               className="border border-gray-200"
-              placeholder="Condition"
+              placeholder="Zgjidh gjendjen"
               value={store.condition}
               options={[
-                { value: "used", label: "Used" },
-                { value: "refurbished", label: "Refurbished" },
-                { value: "new_old_stock", label: "New Old Stock" },
+                { value: "used", label: "E përdorur" },
+                { value: "refurbished", label: "E rinovuar" },
+                { value: "new_old_stock", label: "E re (stok i vjetër)" },
               ]}
               onChange={(v) => store.set({ condition: v as string })}
             />
           </FormField>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Category">
+          <FormField label="Kategoria" optional>
             <Dropdown
               size="md"
               className="border border-gray-200"
-              placeholder="Select category"
+              placeholder="Zgjidh kategorinë"
               value={store.categoryId}
               options={topCategories.flatMap((c) =>
                 subCategories
@@ -121,9 +127,11 @@ export default function PartForm() {
             />
           </FormField>
           <TextInput
-            label="OEM Number"
+            label="Numri OEM"
+            optional
             value={store.oemNumber}
             onChange={(v) => store.set({ oemNumber: v })}
+            hint="Numri origjinal i pjesës, nëse e di."
           />
         </div>
       </FormSection>
@@ -132,15 +140,19 @@ export default function PartForm() {
       <section className="border border-gray-200 bg-white">
         <div className="px-5 py-3 border-b border-gray-100">
           <h2 className="text-sm font-bold uppercase tracking-widest text-gray-700">
-            Fits Which Car?
+            Për cilën makinë?
           </h2>
         </div>
         <div className="px-5 py-4">
+          <p className="text-sm text-gray-500 mb-3">
+            Zgjidh makinat me të cilat përshtatet kjo pjesë, pastaj shtyp “Shto makinën”.
+            Mund të shtosh disa makina.
+          </p>
           <div className="grid grid-cols-2 gap-2">
             <Dropdown
               size="md"
               className="border border-gray-200"
-              placeholder="Year"
+              placeholder="Viti"
               value={store.currentYear}
               options={(store.availableYears ?? [])
                 .slice()
@@ -161,7 +173,7 @@ export default function PartForm() {
             <Dropdown
               size="md"
               className="border border-gray-200"
-              placeholder="Make"
+              placeholder="Marka"
               value={store.currentMakeId}
               options={store.makes.map((m) => ({
                 value: m.id,
@@ -182,7 +194,7 @@ export default function PartForm() {
             <Dropdown
               size="md"
               className="border border-gray-200"
-              placeholder="Model"
+              placeholder="Modeli"
               value={store.currentModelId}
               options={store.models.map((m) => ({ value: m.id, label: m.name }))}
               onChange={(v) =>
@@ -197,7 +209,7 @@ export default function PartForm() {
             <Dropdown
               size="md"
               className="border border-gray-200"
-              placeholder="Trim"
+              placeholder="Versioni"
               value={store.currentYearId}
               options={store.years.map((y) => ({
                 value: y.id,
@@ -214,7 +226,7 @@ export default function PartForm() {
             disabled={!store.currentYearId}
             className="mt-2 w-full bg-zinc-900 text-white px-4 py-2 text-sm font-semibold hover:bg-zinc-700 transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
           >
-            + Add
+            + Shto makinën
           </button>
           {store.compatEntries.length > 0 && (
             <div className="mt-3 space-y-1.5">
@@ -242,7 +254,7 @@ export default function PartForm() {
                     onClick={() => store.removeCompat(e.modelYearId)}
                     className="text-xs text-red-600 hover:text-red-500 font-semibold transition-colors"
                   >
-                    Remove
+                    Hiq
                   </button>
                 </div>
               ))}
@@ -252,7 +264,7 @@ export default function PartForm() {
       </section>
 
       {/* Location */}
-      <FormSection title="Location">
+      <FormSection title="Vendndodhja">
         {store.sellerLatitude !== null && (
           <button
             type="button"
@@ -271,7 +283,7 @@ export default function PartForm() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-9.5 11.25S.5 17.642.5 10.5a9 9 0 1119 0z" />
             </svg>
-            Use Shop Location
+            Përdor vendndodhjen e dyqanit
           </button>
         )}
         <LocationPicker

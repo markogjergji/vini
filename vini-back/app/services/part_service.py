@@ -10,6 +10,7 @@ from app.config import settings
 from app.models.enums import ListingStatus
 from app.models.part import Part, PartCompatibility, PartImage, PartCategory
 from app.models.seller import Seller
+from app.models.user import User, UserRole
 from app.models.vehicle import Make, Model, ModelYear
 from app.schemas.part import (
     PartCreate,
@@ -130,6 +131,56 @@ def delete_part_image(session: Session, part_id: int, image_id: int) -> bool:
     return True
 
 
+def build_part_list_item(session: Session, part: Part) -> PartListItem:
+    # Get primary image
+    primary_img = session.exec(
+        select(PartImage).where(PartImage.part_id == part.id, PartImage.is_primary == True)  # noqa: E712
+    ).first()
+    if not primary_img:
+        primary_img = session.exec(
+            select(PartImage).where(PartImage.part_id == part.id).order_by(PartImage.sort_order)
+        ).first()
+
+    category = session.get(PartCategory, part.category_id) if part.category_id else None
+
+    # Build a compact vehicle label from the first compatible vehicle
+    vehicle_label: str | None = None
+    first_compat = session.exec(
+        select(PartCompatibility).where(PartCompatibility.part_id == part.id).limit(1)
+    ).first()
+    if first_compat:
+        my = session.get(ModelYear, first_compat.model_year_id)
+        if my:
+            model = session.get(Model, my.model_id)
+            if model:
+                make = session.get(Make, model.make_id)
+                if make:
+                    total_compats = session.exec(
+                        select(func.count()).select_from(
+                            select(PartCompatibility).where(PartCompatibility.part_id == part.id).subquery()
+                        )
+                    ).one()
+                    vehicle_label = f"{make.name} {model.name}"
+                    if total_compats > 1:
+                        vehicle_label += f" +{total_compats - 1}"
+
+    return PartListItem(
+        id=part.id,  # type: ignore[arg-type]
+        title=part.title,
+        price=part.price,
+        currency=part.currency,
+        condition=part.condition,
+        status=part.status,
+        location_text=part.location_text,
+        created_at=part.created_at,
+        primary_image_url=primary_img.url if primary_img else None,
+        category=PartCategoryRead(
+            id=category.id, name=category.name, slug=category.slug, parent_id=category.parent_id, icon=category.icon, image_url=category.image_url, sort_order=category.sort_order  # type: ignore[arg-type]
+        ) if category else None,
+        vehicle_label=vehicle_label,
+    )
+
+
 def search_parts(
     session: Session,
     make_id: int | None = None,
@@ -143,10 +194,16 @@ def search_parts(
     page: int = 1,
     limit: int = 20,
 ) -> PartSearchResponse:
-    # Base query for parts
+    # Base query for parts. Only surface parts whose shop belongs to an active
+    # seller — demoted or deactivated owners have their listings hidden until the
+    # owner is restored to an active seller.
     query = (
         select(Part)
+        .join(Seller, col(Part.seller_id) == Seller.id)
+        .join(User, Seller.user_id == User.id)
         .where(Part.status == ListingStatus.active)
+        .where(User.is_active == True)  # noqa: E712
+        .where(User.role == UserRole.seller)
     )
 
     if seller_id:
@@ -202,57 +259,7 @@ def search_parts(
     offset = (page - 1) * limit
     results = session.exec(query.order_by(order_col).offset(offset).limit(limit)).all()
 
-    items: list[PartListItem] = []
-    for part in results:
-        # Get primary image
-        primary_img = session.exec(
-            select(PartImage).where(PartImage.part_id == part.id, PartImage.is_primary == True)  # noqa: E712
-        ).first()
-        if not primary_img:
-            primary_img = session.exec(
-                select(PartImage).where(PartImage.part_id == part.id).order_by(PartImage.sort_order)
-            ).first()
-
-        category = session.get(PartCategory, part.category_id) if part.category_id else None
-
-        # Build a compact vehicle label from the first compatible vehicle
-        vehicle_label: str | None = None
-        first_compat = session.exec(
-            select(PartCompatibility).where(PartCompatibility.part_id == part.id).limit(1)
-        ).first()
-        if first_compat:
-            my = session.get(ModelYear, first_compat.model_year_id)
-            if my:
-                model = session.get(Model, my.model_id)
-                if model:
-                    make = session.get(Make, model.make_id)
-                    if make:
-                        total_compats = session.exec(
-                            select(func.count()).select_from(
-                                select(PartCompatibility).where(PartCompatibility.part_id == part.id).subquery()
-                            )
-                        ).one()
-                        vehicle_label = f"{make.name} {model.name}"
-                        if total_compats > 1:
-                            vehicle_label += f" +{total_compats - 1}"
-
-        items.append(
-            PartListItem(
-                id=part.id,  # type: ignore[arg-type]
-                title=part.title,
-                price=part.price,
-                currency=part.currency,
-                condition=part.condition,
-                status=part.status,
-                location_text=part.location_text,
-                created_at=part.created_at,
-                primary_image_url=primary_img.url if primary_img else None,
-                category=PartCategoryRead(
-                    id=category.id, name=category.name, slug=category.slug, parent_id=category.parent_id, icon=category.icon, image_url=category.image_url, sort_order=category.sort_order  # type: ignore[arg-type]
-                ) if category else None,
-                vehicle_label=vehicle_label,
-            )
-        )
+    items = [build_part_list_item(session, part) for part in results]
 
     return PartSearchResponse(items=items, total=total, page=page, limit=limit)
 
@@ -264,6 +271,11 @@ def get_part_detail(session: Session, part_id: int) -> PartDetail | None:
 
     seller = session.get(Seller, part.seller_id)
     if not seller:
+        return None
+
+    # Hide listings whose shop owner is not an active seller (demoted/deactivated).
+    owner = session.get(User, seller.user_id) if seller.user_id else None
+    if not owner or not owner.is_active or owner.role != UserRole.seller:
         return None
 
     category = session.get(PartCategory, part.category_id) if part.category_id else None

@@ -17,6 +17,7 @@ import app.models.user  # noqa: F401
 import app.models.seller  # noqa: F401
 import app.models.vehicle  # noqa: F401
 import app.models.part  # noqa: F401
+import app.models.favorite  # noqa: F401
 
 from app.models.vehicle import Make
 
@@ -48,10 +49,11 @@ app.add_middleware(
 
 app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
 
-from app.routers import vehicles, parts, sellers, auth, admin  # noqa: E402
+from app.routers import vehicles, parts, sellers, auth, admin, favorites  # noqa: E402
 
 app.include_router(vehicles.router, prefix="/api/vehicles", tags=["vehicles"])
 app.include_router(parts.router, prefix="/api/parts", tags=["parts"])
 app.include_router(sellers.router, prefix="/api/sellers", tags=["sellers"])
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
+app.include_router(favorites.router, prefix="/api/favorites", tags=["favorites"])

@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import Header from "./Header";
 import AuthModal from "../auth/AuthModal";
+import ShopSetupPrompt from "../seller/ShopSetupPrompt";
+import { useAuthStore } from "../../stores/authStore";
+import { useFavoriteStore } from "../../stores/favoriteStore";
 
 type AuthMode = "login" | "register";
 
@@ -12,9 +15,21 @@ export default function Layout() {
   const location = useLocation();
   const isHome = location.pathname === "/";
 
+  const userId = useAuthStore((s) => s.user?.id);
+  const loadFavoriteIds = useFavoriteStore((s) => s.loadIds);
+  const clearFavorites = useFavoriteStore((s) => s.clear);
+
+  // Keep the favorite-id cache in sync with the logged-in user so part cards
+  // render the correct heart state. Reloads when switching accounts.
+  useEffect(() => {
+    if (userId) loadFavoriteIds();
+    else clearFavorites();
+  }, [userId, loadFavoriteIds, clearFavorites]);
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
       <Header onOpenAuth={setAuthMode} />
+      <ShopSetupPrompt />
       {!isHome && (
         <div className="max-w-6xl mx-auto px-4 pt-4 pb-1">
           <button

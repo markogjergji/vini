@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { Heart } from "lucide-react";
 import type { PartListItem } from "../../types";
 import { formatPrice, formatDate, formatCondition } from "../../utils/formatters";
+import { useAuthStore } from "../../stores/authStore";
+import { useFavoriteStore } from "../../stores/favoriteStore";
 
 interface Props {
   part: PartListItem;
@@ -17,6 +20,15 @@ const CONDITION_STYLES: Record<string, string> = {
 
 export default function PartCard({ part }: Props) {
   const conditionStyle = CONDITION_STYLES[part.condition] ?? "bg-gray-100 text-gray-600 border-gray-200";
+  const user = useAuthStore((s) => s.user);
+  const isFavorite = useFavoriteStore((s) => s.ids.has(part.id));
+  const toggleFavorite = useFavoriteStore((s) => s.toggle);
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(part.id);
+  };
 
   return (
     <Link
@@ -38,6 +50,22 @@ export default function PartCard({ part }: Props) {
             </svg>
             <span className="text-xs">No image</span>
           </div>
+        )}
+
+        {/* Favorite toggle */}
+        {user && (
+          <button
+            type="button"
+            onClick={handleToggleFavorite}
+            aria-label={isFavorite ? "Hiq nga të preferuarat" : "Shto te të preferuarat"}
+            aria-pressed={isFavorite}
+            className="absolute top-2 right-2 flex items-center justify-center w-8 h-8 rounded-full bg-white/90 border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-300 transition-colors shadow-sm"
+          >
+            <Heart
+              size={16}
+              className={isFavorite ? "fill-red-600 text-red-600" : ""}
+            />
+          </button>
         )}
 
         {/* Category + vehicle badges */}

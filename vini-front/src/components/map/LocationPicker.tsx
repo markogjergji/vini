@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import "./mapTheme.css";
 
 export interface LocationValue {
   latitude: number | null;
@@ -116,15 +117,27 @@ export default function LocationPicker({ value, onChange }: Props) {
     else map.once("load", doPlace);
   }, [value.latitude, value.longitude]);
 
+  const hasPin = value.latitude !== null && value.longitude !== null;
+
   return (
-    <div>
+    <div className="font-heading">
       <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
-        Location{" "}
-        <span className="font-normal normal-case text-gray-400">(optional)</span>
+        Vendndodhja{" "}
+        <span className="font-normal normal-case text-gray-400">(opsionale)</span>
       </label>
 
       {/* Map */}
-      <div ref={containerRef} className="w-full h-64 border border-gray-200" />
+      <div className="relative w-full border border-gray-200 bg-gray-50 overflow-hidden">
+        <div ref={containerRef} className="vini-map w-full h-64" />
+
+        {/* Coordinate readout chip */}
+        {hasPin && (
+          <div className="absolute bottom-2 left-2 z-10 flex items-center gap-1.5 bg-white/95 border border-gray-200 px-2.5 py-1 text-xs text-gray-600 shadow-sm">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600" />
+            {value.latitude!.toFixed(5)}, {value.longitude!.toFixed(5)}
+          </div>
+        )}
+      </div>
 
       <p className="text-xs text-gray-400 mt-1">
         Kliko mbi hartë për të caktuar vendndodhjen e dyqanit.
@@ -140,7 +153,7 @@ export default function LocationPicker({ value, onChange }: Props) {
             type="text"
             value={value.city}
             onChange={(e) => onChange({ ...value, city: e.target.value })}
-            className="border border-gray-200 px-3 py-2 text-sm w-full focus:outline-none focus:border-gray-400"
+            className="border border-gray-200 bg-white px-3 py-2 text-sm w-full focus:outline-none focus:border-gray-400 transition-colors"
             placeholder="p.sh. Tiranë"
           />
         </div>
@@ -152,7 +165,7 @@ export default function LocationPicker({ value, onChange }: Props) {
             type="text"
             value={value.address}
             onChange={(e) => onChange({ ...value, address: e.target.value })}
-            className="border border-gray-200 px-3 py-2 text-sm w-full focus:outline-none focus:border-gray-400"
+            className="border border-gray-200 bg-white px-3 py-2 text-sm w-full focus:outline-none focus:border-gray-400 transition-colors"
             placeholder="p.sh. Rruga e Durrësit"
           />
         </div>

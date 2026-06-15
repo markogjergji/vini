@@ -45,7 +45,7 @@ export default function MyPartsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-red-600 mb-1">Seller</p>
-          <h1 className="text-2xl font-bold text-gray-900">My Listings</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Pjesët e mia</h1>
           {!loading && !error && (
             <p className="text-sm text-gray-400 mt-0.5">{total} {total === 1 ? "part" : "parts"} listed</p>
           )}

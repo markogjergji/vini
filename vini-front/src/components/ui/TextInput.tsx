@@ -7,28 +7,36 @@ interface Props {
   label: string;
   required?: boolean;
   optional?: boolean;
+  hint?: string;
   type?: string;
   value: string | number;
   onChange: (value: string) => void;
   className?: string;
+  placeholder?: string;
+  autoFocus?: boolean;
 }
 
 export default function TextInput({
   label,
   required,
   optional,
+  hint,
   type = "text",
   value,
   onChange,
   className,
+  placeholder,
+  autoFocus,
 }: Props) {
   return (
-    <FormField label={label} required={required} optional={optional} className={className}>
+    <FormField label={label} required={required} optional={optional} hint={hint} className={className}>
       <input
         type={type}
         className={inputCls}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoFocus={autoFocus}
       />
     </FormField>
   );

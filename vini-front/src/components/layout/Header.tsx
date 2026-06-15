@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   LogOut, LayoutDashboard, UserCircle,
-  Menu, X, Upload, List, ShieldAlert,
+  Menu, X, Upload, List, ShieldAlert, Heart,
 } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
 
@@ -79,7 +79,7 @@ export default function Header({ onOpenAuth }: Props) {
                       className="flex items-center gap-2 text-zinc-400 hover:text-white hover:bg-zinc-800 px-4 py-2 text-sm rounded-md transition-colors no-underline"
                     >
                       <List size={14} />
-                      My Listings
+                      Pjesët e mia
                     </Link>
                   )}
                   {user.role === "seller" && (
@@ -98,6 +98,13 @@ export default function Header({ onOpenAuth }: Props) {
 
                 {/* Account icons — far right */}
                 <div className="flex items-center gap-1 ml-2">
+                  <Link
+                    to="/favorites"
+                    className="flex items-center justify-center w-9 h-9 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition-colors no-underline"
+                    aria-label="Favorites"
+                  >
+                    <Heart size={18} />
+                  </Link>
                   <Link
                     to="/profile"
                     className="flex items-center justify-center w-9 h-9 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition-colors no-underline"
@@ -186,7 +193,7 @@ export default function Header({ onOpenAuth }: Props) {
                   className="flex items-center gap-3 text-zinc-300 hover:text-white hover:bg-zinc-800 px-4 py-3 rounded-lg transition-colors no-underline text-sm"
                 >
                   <List size={16} className="shrink-0" />
-                  My Listings
+                  Pjesët e mia
                 </Link>
               )}
               {user.role === "seller" && (
@@ -198,6 +205,13 @@ export default function Header({ onOpenAuth }: Props) {
                   Shto Pjesë
                 </Link>
               )}
+              <Link
+                to="/favorites"
+                className="flex items-center gap-3 text-zinc-300 hover:text-white hover:bg-zinc-800 px-4 py-3 rounded-lg transition-colors no-underline text-sm"
+              >
+                <Heart size={16} className="shrink-0" />
+                Të preferuarat
+              </Link>
               <Link
                 to="/profile"
                 className="flex items-center gap-3 text-zinc-300 hover:text-white hover:bg-zinc-800 px-4 py-3 rounded-lg transition-colors no-underline text-sm"

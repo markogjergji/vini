@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import "./mapTheme.css";
 import { getAllSellers } from "../../api/sellers";
 import type { Seller } from "../../types";
 
@@ -27,35 +28,56 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
   layers: [{ id: "carto-tiles", type: "raster", source: "carto" }],
 };
 
-function buildPopupHtml(seller: Seller): string {
-  const verified = seller.is_verified
-    ? `<span style="display:inline-block;background:#dcfce7;color:#166534;font-size:10px;font-weight:700;padding:2px 7px;text-transform:uppercase;letter-spacing:.06em;border:1px solid #bbf7d0">✓ Verified</span>`
-    : "";
-  const meta: string[] = [];
-  if (seller.business_name && seller.business_name !== seller.name)
-    meta.push(`<span style="color:#374151">${seller.business_name}</span>`);
-  if (seller.city)
-    meta.push(`<span>${seller.city}</span>`);
-  if (seller.phone)
-    meta.push(`<span>${seller.phone}</span>`);
+const FONT = `"LexendDeca", system-ui, sans-serif`;
 
-  const metaHtml = meta.length
-    ? `<div style="display:flex;flex-direction:column;gap:2px;font-size:12px;color:#6b7280;margin-top:5px">${meta.join("")}</div>`
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!),
+  );
+}
+
+function buildPopupHtml(seller: Seller): string {
+  const name = escapeHtml(seller.name);
+
+  const verified = seller.is_verified
+    ? `<span style="display:inline-flex;align-items:center;gap:3px;background:#dcfce7;color:#166534;font-size:9px;font-weight:700;padding:2px 6px;text-transform:uppercase;letter-spacing:.06em;border:1px solid #bbf7d0">✓ I verifikuar</span>`
+    : "";
+
+  const rows: string[] = [];
+  if (seller.business_name && seller.business_name !== seller.name)
+    rows.push(
+      `<div style="font-size:12px;color:#374151">${escapeHtml(seller.business_name)}</div>`,
+    );
+  if (seller.city)
+    rows.push(
+      `<div style="font-size:12px;color:#6b7280">${escapeHtml(seller.city)}</div>`,
+    );
+  if (seller.phone)
+    rows.push(
+      `<div style="font-size:12px;color:#6b7280">${escapeHtml(seller.phone)}</div>`,
+    );
+
+  const metaHtml = rows.length
+    ? `<div style="display:flex;flex-direction:column;gap:2px;margin-top:6px">${rows.join("")}</div>`
     : "";
 
   return `
-    <div style="min-width:180px;max-width:220px;font-family:system-ui,sans-serif;padding:2px 0">
-      <div style="font-size:14px;font-weight:700;color:#111;line-height:1.3">${seller.name}</div>
-      ${verified ? `<div style="margin-top:4px">${verified}</div>` : ""}
-      ${metaHtml}
-      <div style="border-top:1px solid #f3f4f6;margin-top:10px;padding-top:10px">
-        <button
-          data-shop-id="${seller.id}"
-          style="display:block;width:100%;background:#dc2626;color:#fff;border:none;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.03em"
-        >
-          Shiko Dyqanin →
-        </button>
+    <div style="min-width:190px;max-width:230px;font-family:${FONT}">
+      <div style="padding:12px 14px 10px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+          <div style="font-size:14px;font-weight:700;color:#111827;line-height:1.3">${name}</div>
+        </div>
+        ${verified ? `<div style="margin-top:6px">${verified}</div>` : ""}
+        ${metaHtml}
       </div>
+      <button
+        data-shop-id="${seller.id}"
+        style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:#dc2626;color:#fff;border:none;border-top:1px solid #b91c1c;padding:9px 12px;font-family:${FONT};font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;cursor:pointer"
+        onmouseover="this.style.background='#ef4444'"
+        onmouseout="this.style.background='#dc2626'"
+      >
+        Shiko dyqanin →
+      </button>
     </div>
   `;
 }
@@ -159,7 +181,7 @@ export default function ShopsMap() {
         </div>
 
         <div className="relative">
-          <div ref={containerRef} className="w-full border border-gray-200" style={{ height: 420 }} />
+          <div ref={containerRef} className="vini-map w-full border border-gray-200" style={{ height: 420 }} />
           {loading && (
             <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
               <span className="text-sm text-gray-400">Duke ngarkuar…</span>
