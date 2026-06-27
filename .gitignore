@@ -7,4 +7,4 @@ __pycache__/
 vini-back/vini.db
 
 # Uploaded files
-vini-back/app/uploads/
+# (catalog images under uploads/ are committed; see git add of that folder)

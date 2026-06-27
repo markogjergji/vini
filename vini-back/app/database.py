@@ -1,11 +1,30 @@
 from collections.abc import Generator
 
-from sqlalchemy import text
+from sqlalchemy import event, text
 from sqlmodel import SQLModel, Session, create_engine
 
 from app.config import settings
 
-engine = create_engine(settings.database_url, echo=False)
+_is_sqlite = settings.database_url.startswith("sqlite")
+
+# SQLite fails a write immediately with "database is locked" the moment another
+# connection holds the lock, unless a busy_timeout is set. Combined with WAL
+# mode (readers no longer block writers), this lets concurrent requests wait
+# briefly for the lock instead of erroring out. check_same_thread=False is
+# required because FastAPI runs sync endpoints across a thread pool.
+_connect_args = {"check_same_thread": False, "timeout": 30} if _is_sqlite else {}
+
+engine = create_engine(settings.database_url, echo=False, connect_args=_connect_args)
+
+
+if _is_sqlite:
+    @event.listens_for(engine, "connect")
+    def _set_sqlite_pragmas(dbapi_conn, _record) -> None:
+        cur = dbapi_conn.cursor()
+        cur.execute("PRAGMA journal_mode=WAL")
+        cur.execute("PRAGMA busy_timeout=30000")
+        cur.execute("PRAGMA synchronous=NORMAL")
+        cur.close()
 
 
 def _run_migrations() -> None:
